@@ -51,3 +51,9 @@ React 19 / Vinext / Shadcn Base UI / Tailwind / Cloudflare Workers。保留原�
 Lint 检查产品代码；原始生成的 `components/ui` 和 `hooks/use-mobile.ts` 存在上游规则不兼容，保持原样并排除 lint。TypeScript 检查覆盖全部组件。
 
 Sites 关联保存在 `.openai/hosting.json`，使用私人访问；代码同步到原 GitHub 私有仓库。密钥不进入代码库。
+
+## v0.3 开发中（2026-10-08）
+
+目前本地已新增 12 条研究内容、3 篇深入图文、3 条带配音的动态分镜，以及方向社区、回复、共读和兴趣附近。生产构建与类型检查通过，已进行部分真实浏览器流程验证。以上 v0.2 描述为上一已部署版本；本地新功能尚未完成全量验收与部署。
+
+详细进度、核验来源和未完成事项见 [docs/implementation-status.md](docs/implementation-status.md)。目前仍使用本机存储；没有服务端社区或跨设备同步。原 Sites 项目访问返回 project_not_found，保持原项目身份等待账户/工作区问题解决。

@@ -44,7 +44,7 @@ export default async function Page({ params, searchParams }: Props) {
         key={path.join('/') + tab}
         paperId={path[1]}
         initialTab={
-          ['discussion', 'notes', 'resources'].includes(tab || '')
+          ['deep', 'discussion', 'notes', 'resources'].includes(tab || '')
             ? tab
             : 'overview'
         }

@@ -31,7 +31,8 @@ const base = {
   threadVotes: [],
   followThreads: [],
 };
-assert.equal(papers.length, 8);
+assert.equal(papers.length, 12);
+assert.equal(papers.filter((p) => p.sourceUrl).length, 4);
 assert.equal(new Set(papers.map((p) => p.id)).size, papers.length);
 for (const p of papers) {
   assert(topics.some((t) => t.name === p.topic));
@@ -69,7 +70,7 @@ assert(
     (p) => p.topic === 'Agent Memory',
   ),
 );
-assert.equal(rankPapers(base, 'recent')[0].id, '2407.04620');
+assert.equal(rankPapers(base, 'recent')[0].id, 'gemini-robotics');
 const citation = bibtex(papers[0]);
 assert(citation.includes('Noah Shinn and Federico Cassano'));
 assert(citation.includes('https://arxiv.org/abs/2303.11366'));
@@ -83,5 +84,47 @@ assert(note.includes('我的新想法'));
 assert(note.includes('如何复现？'));
 assert(note.includes('非作者原话'));
 console.log(
-  'Verified 8 paper records, recommendation independence, negative feedback, topic follows, search, dates, citations and note exports.',
+  'Verified 12 research records, recommendation independence, negative feedback, topic follows, search, dates, citations and note exports.',
+);
+
+assert(
+  relevance(papers[0], { ...base, saved: [papers[1].id] }) >
+    relevance(papers[0], base),
+  'Saving related research changes ranking',
+);
+assert(
+  rankPapers({ ...base, following: ['World Models'] }, 'following').every(
+    (p) => p.topic === 'World Models',
+  ),
+);
+const official = papers.find((p) => p.id === 'openai-o1');
+assert(bibtex(official).includes('@misc'));
+assert(!bibtex(official).includes('arXiv'));
+const { deepReads } = await import(moduleUrl(compile('../lib/deep-reads.ts')));
+assert.equal(Object.keys(deepReads).length, 3);
+for (const [id, article] of Object.entries(deepReads)) {
+  assert(papers.some((p) => p.id === id));
+  assert.equal(article.sections.length, 6);
+  assert.equal(article.flow.length, 4);
+  assert(article.evidence.length >= 2);
+}
+const clips = JSON.parse(
+  readFileSync(new URL('../lib/clips.json', import.meta.url), 'utf8'),
+);
+assert.equal(clips.length, 3);
+for (const clip of clips) {
+  assert(deepReads[clip.id]);
+  assert.equal(clip.scenes.length, 5);
+  for (const scene of clip.scenes) {
+    assert(scene.duration > 0);
+    assert(scene.text && scene.nodes.length === 3);
+    const asset = readFileSync(
+      new URL('../public' + scene.audio, import.meta.url),
+    );
+    assert(asset.length > 1000);
+    assert.equal(asset.subarray(4, 8).toString(), 'ftyp');
+  }
+}
+console.log(
+  'Verified save/read ranking signals, official-source citations, three deep articles, and 15 actual AAC media files.',
 );

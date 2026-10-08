@@ -1,4 +1,9 @@
 'use client';
+import { Community, CommunityRecords, Nearby, Replies } from './community';
+import { DeepArticle } from './deep-read';
+import { ResearchPlayer, clips } from './research-player';
+import { InterestPicker } from './interest-picker';
+import { deepReads } from '@/lib/deep-reads';
 import { useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -60,6 +65,7 @@ import {
 } from '@/lib/papers';
 import { useDemo, toggle, updateDemo, resetDemo } from '@/lib/demo-store';
 import {
+  recommendationReason,
   relevance,
   rankPapers,
   bibtex,
@@ -144,7 +150,9 @@ function PaperCard({ p, compact = false }: { p: Paper; compact?: boolean }) {
             {p.topic}
           </Link>
           <span>{p.date.slice(0, 7).replace('-', ' · ')}</span>
-          <span>arXiv</span>
+          <span>
+            {p.publisher || 'arXiv'} · {p.kind || '论文'}
+          </span>
         </div>
         <Link className="paper-title" href={`/paper/${p.id}`}>
           {p.title}
@@ -156,7 +164,7 @@ function PaperCard({ p, compact = false }: { p: Paper; compact?: boolean }) {
         <p className="summary">{p.summary}</p>
         <div className="card-reason">
           <Target size={14} />
-          {relevance(p, s)}% 兴趣匹配 <span>·</span> 质量信号 {p.quality}
+          {recommendationReason(p, s)}
           <small>演示</small>
         </div>
         <div className="paper-actions">
@@ -489,7 +497,10 @@ function Feed({ initialQuery }: { initialQuery: string }) {
   const [topic, setTopic] = useState('全部');
   const [query, setQuery] = useState(initialQuery);
   const search = query;
-  const list = rankPapers(s, mode, topic, search);
+  const [contentType, setContentType] = useState('全部类型');
+  const list = rankPapers(s, mode, topic, search).filter(
+    (p) => contentType === '全部类型' || (p.kind || '论文') === contentType,
+  );
   return (
     <div className="content-columns">
       <main>
@@ -503,6 +514,10 @@ function Feed({ initialQuery }: { initialQuery: string }) {
             <Layers size={16} />
             刷一篇
           </Link>
+        </div>
+        <div className="interest-toolbar">
+          <InterestPicker />
+          <span className="tiny">精选研究样本 · 非实时资讯流</span>
         </div>
         <section className="editor-pick">
           <div>
@@ -518,13 +533,13 @@ function Feed({ initialQuery }: { initialQuery: string }) {
             <p>
               从一次行动，到一次反思，再到长期记忆。
               <br />
-              用四篇论文，串起这条研究路径。
+              用三篇论文，串起这条研究路径。
             </p>
             <div className="editor-bottom">
               <Link href="/topic/Agent%20Memory">
                 进入专题 <ArrowRight size={16} />
               </Link>
-              <span>4 篇关联阅读 · 约 15 分钟导览</span>
+              <span>3 篇关联阅读 · 约 15 分钟导览</span>
             </div>
           </div>
           <div className="reading-path">
@@ -544,18 +559,14 @@ function Feed({ initialQuery }: { initialQuery: string }) {
         <Tabs value={mode} onValueChange={(v) => setMode(String(v))}>
           <TabsList variant="line" className="feed-tabs">
             <TabsTrigger value="personal">为你推荐</TabsTrigger>
-            <TabsTrigger value="quality">社区精选</TabsTrigger>
+            <TabsTrigger value="quality">前沿热点</TabsTrigger>
+            <TabsTrigger value="following">关注动态</TabsTrigger>
             <TabsTrigger value="recent">按发表时间</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="filter-row">
           <div className="chips">
-            {[
-              '全部',
-              'Agent Memory',
-              'Agent Systems',
-              'Test-Time Learning',
-            ].map((t) => (
+            {['全部', ...topics.map((t) => t.name)].map((t) => (
               <button
                 aria-pressed={topic === t}
                 onClick={() => setTopic(t)}
@@ -566,7 +577,20 @@ function Feed({ initialQuery }: { initialQuery: string }) {
               </button>
             ))}
           </div>
-          <span className="tiny">{list.length} 篇论文</span>
+          <label className="content-type">
+            内容类型{' '}
+            <select
+              value={contentType}
+              onChange={(e) => setContentType(e.target.value)}
+            >
+              {['全部类型', '论文', '研究博客', '技术报告', '项目发布'].map(
+                (x) => (
+                  <option key={x}>{x}</option>
+                ),
+              )}
+            </select>
+          </label>
+          <span className="tiny">{list.length} 条内容</span>
         </div>
         {search && (
           <div className="search-results">
@@ -727,6 +751,7 @@ function TopicPage({ name }: { name: string }) {
             </button>
           </div>
         </section>
+        <Community topic={name} />
         <h2 className="section-title">从这些论文开始</h2>
         {list.map((p) => (
           <PaperCard p={p} key={p.id} />
@@ -782,14 +807,16 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
               {p.topic}
             </Link>
             <span>首次发表 {p.date}</span>
-            <span>arXiv:{p.id}</span>
+            <span>
+              {p.publisher || `arXiv:${p.id}`} · {p.kind || '论文'}
+            </span>
           </div>
           <h1 className="detail-title">{p.title}</h1>
           <p className="detail-authors">{p.authors.join(' · ')}</p>
           <div className="detail-actions">
             <External href={source(p)}>
               <FileText size={16} />
-              原文与 PDF
+              查看原文
             </External>
             {p.project && <External href={p.project}>项目与代码</External>}
             <button
@@ -806,7 +833,10 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
           </div>
           <Tabs value={tab} onValueChange={(v) => setTab(String(v))}>
             <TabsList variant="line" className="feed-tabs">
-              <TabsTrigger value="overview">阅读导览</TabsTrigger>
+              <TabsTrigger value="overview">快速解读</TabsTrigger>
+              {deepReads[p.id] && (
+                <TabsTrigger value="deep">深入图文</TabsTrigger>
+              )}
               <TabsTrigger value="discussion">
                 讨论{' '}
                 <span className="count">
@@ -842,7 +872,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
               <p className="source-note">
                 基于{' '}
                 <a href={source(p)} target="_blank" rel="noreferrer">
-                  论文摘要 ↗
+                  原始来源 ↗
                 </a>{' '}
                 整理 · 编辑导览，不是作者原话或实时 AI 回答
               </p>
@@ -907,6 +937,8 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                 <ArrowRight size={18} />
               </Link>
             </>
+          ) : tab === 'deep' ? (
+            <DeepArticle id={p.id} />
           ) : tab === 'discussion' ? (
             <>
               <div className="discussion-intro">
@@ -937,6 +969,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                       Lin Chen <span>你 · 本地</span>
                     </strong>
                     <p>{c}</p>
+                    <Replies id={`comment:${p.id}:${i}`} />
                   </div>
                 </div>
               ))}
@@ -1045,8 +1078,8 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
               >
                 <FileText />
                 <div>
-                  <h3>arXiv 原文</h3>
-                  <p>摘要、PDF、版本历史与作者列表</p>
+                  <h3>{p.publisher || 'arXiv'} 原文</h3>
+                  <p>查看原始研究、发表信息与完整材料</p>
                 </div>
                 <ArrowUpRight />
               </a>
@@ -1183,7 +1216,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
             <FileText />
             <span>
               <strong>BibTeX</strong>
-              <small>作者、标题、发表年份与 arXiv 来源</small>
+              <small>作者、标题、发表年份与原始来源</small>
             </span>
             <Download />
           </button>
@@ -1253,6 +1286,7 @@ function Thread({
           {s.followThreads.includes(t.id) ? '已关注讨论' : '关注讨论'}
         </button>
       </div>
+      <Replies id={t.id} />
     </article>
   );
 }
@@ -1279,6 +1313,29 @@ function Discussions() {
             围绕论文的异步交流 <small>人物与内容为社区演示样例</small>
           </p>
         </div>
+        <div className="chips">
+          {topics.map((t) => (
+            <Link
+              key={t.name}
+              className="chip"
+              href={`/topic/${encodeURIComponent(t.name)}`}
+            >
+              {t.name} 社区 ↗
+            </Link>
+          ))}
+        </div>
+        {s.posts.map((p) => (
+          <article key={p.id} className="community-post">
+            <small>你 · {p.topic}</small>
+            <h3>
+              <Link href={`/topic/${encodeURIComponent(p.topic)}`}>
+                {p.title} ↗
+              </Link>
+            </h3>
+            <p>{p.text}</p>
+            <Replies id={p.id} />
+          </article>
+        ))}
         <Tabs value={kind} onValueChange={(v) => setKind(String(v))}>
           <TabsList variant="line" className="feed-tabs">
             {['全部', '问题', '复现', '阅读笔记', '我关注的'].map((x) => (
@@ -1305,6 +1362,7 @@ function Discussions() {
             text="点击讨论下方的关注按钮，之后在这里继续阅读。"
           />
         )}
+        <Nearby />
       </main>
       <RightRail />
     </div>
@@ -1474,7 +1532,8 @@ function Swipe() {
     { index: number; id: string; previous: number | undefined }[]
   >([]);
   const touch = useRef<{ x: number; y: number } | null>(null);
-  const p = papers[index];
+  const shortPapers = clips.map((c) => papers.find((p) => p.id === c.id)!);
+  const p = shortPapers[index];
   function respond(v: number) {
     if (!p) return;
     setHistory((h) => [...h, { index, id: p.id, previous: s.feedback[p.id] }]);
@@ -1498,11 +1557,12 @@ function Swipe() {
           <p>不用读完再决定。先给一个直觉。</p>
         </div>
         <span className="swipe-counter">
-          {Math.min(index + 1, papers.length)} <small>/ {papers.length}</small>
+          {Math.min(index + 1, shortPapers.length)}{' '}
+          <small>/ {shortPapers.length}</small>
         </span>
       </div>
       <div className="swipe-progress">
-        {papers.map((x, i) => (
+        {shortPapers.map((x, i) => (
           <span
             key={x.id}
             className={i < index ? 'done' : i === index ? 'current' : ''}
@@ -1513,7 +1573,7 @@ function Swipe() {
         <>
           <div
             className="swipe-paper"
-            style={{ touchAction: 'pan-y' }}
+            style={{ touchAction: 'pan-x' }}
             onTouchStart={(e) => {
               touch.current = {
                 x: e.touches[0].clientX,
@@ -1525,6 +1585,15 @@ function Swipe() {
               const dx = e.changedTouches[0].clientX - touch.current.x;
               const dy = e.changedTouches[0].clientY - touch.current.y;
               touch.current = null;
+              if (Math.abs(dy) > 100 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+                setIndex((i) =>
+                  Math.max(
+                    0,
+                    Math.min(shortPapers.length - 1, i + (dy < 0 ? 1 : -1)),
+                  ),
+                );
+                return;
+              }
               if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5)
                 respond(dx > 0 ? 1 : -1);
             }}
@@ -1533,12 +1602,12 @@ function Swipe() {
               <span className={`tag ${p.color}`}>{p.topic}</span>
               <span>{p.date.slice(0, 4)}</span>
               <span className="push-right">
-                {relevance(p, s)}% 兴趣匹配 · 演示
+                {Math.round(relevance(p, s))}% 兴趣匹配 · 演示
               </span>
             </div>
             <h2>{p.title}</h2>
             <p className="authors">{p.authors[0]} 等</p>
-            <Diagram p={p} large />
+            <ResearchPlayer key={p.id} id={p.id} />
             <p className="swipe-summary">{p.summary}</p>
             <p className="source-note">
               <Target size={14} />
@@ -1589,7 +1658,13 @@ function Swipe() {
               <RotateCcw size={14} />
               撤销
             </button>
-            <span>也可以左滑 / 右滑</span>
+            <span>左右滑表达兴趣 · 上下滑切换</span>
+            <button
+              disabled={index === 0}
+              onClick={() => setIndex((i) => Math.max(0, i - 1))}
+            >
+              上一条
+            </button>
             <button onClick={() => respond(0)}>
               跳过这篇 <ArrowRight size={14} />
             </button>
@@ -1655,6 +1730,7 @@ function Profile() {
           </div>
         ))}
       </div>
+      <CommunityRecords />
       <div className="profile-columns">
         <section>
           <h2 className="section-title">我的研究兴趣</h2>
@@ -1676,6 +1752,29 @@ function Profile() {
               </div>
             ))}
           </div>
+          <h2 className="section-title">我的阅读记录</h2>
+          <div className="chips">
+            {papers
+              .filter((p) => s.read.includes(p.id))
+              .map((p) => (
+                <Link className="chip" key={p.id} href={`/paper/${p.id}`}>
+                  {p.name} ↗
+                </Link>
+              ))}
+          </div>
+          <h2 className="section-title">我的论文讨论</h2>
+          {Object.entries(s.comments)
+            .filter(([, cs]) => cs.length)
+            .map(([id, cs]) => (
+              <Link
+                className="profile-note"
+                key={id}
+                href={`/paper/${id}?tab=discussion`}
+              >
+                <strong>{papers.find((p) => p.id === id)?.name} ↗</strong>
+                <p>{cs.join('\n')}</p>
+              </Link>
+            ))}
           <h2 className="section-title">我的阅读笔记</h2>
           {papers
             .filter((p) => s.notes[p.id])
@@ -1706,9 +1805,21 @@ function Profile() {
               onClick={() => {
                 download(
                   papers
-                    .filter((p) => s.saved.includes(p.id))
+                    .filter(
+                      (p) =>
+                        s.saved.includes(p.id) ||
+                        s.notes[p.id] ||
+                        s.comments[p.id]?.length,
+                    )
                     .map((p) => markdown(p, s))
-                    .join('\n---\n'),
+                    .join('\n---\n') +
+                    '\n\n## 我的社区讨论\n' +
+                    s.posts
+                      .map(
+                        (p) =>
+                          `### ${p.title}\n${p.topic}\n${p.text}\n${(s.replies[p.id] || []).join('\n')}`,
+                      )
+                      .join('\n\n'),
                   'paperfeed-notes.md',
                 );
                 tell('已导出全部收藏与笔记');

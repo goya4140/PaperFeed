@@ -1,6 +1,18 @@
 'use client';
 import { useSyncExternalStore } from 'react';
 export type DemoState = {
+  onboarded: boolean;
+  joined: string[];
+  people: string[];
+  clubs: string[];
+  posts: {
+    id: string;
+    topic: string;
+    title: string;
+    text: string;
+    replies: string[];
+  }[];
+  replies: Record<string, string[]>;
   saved: string[];
   read: string[];
   votes: string[];
@@ -13,6 +25,12 @@ export type DemoState = {
   followThreads: string[];
 };
 export const initial: DemoState = {
+  onboarded: false,
+  joined: [],
+  people: [],
+  clubs: [],
+  posts: [],
+  replies: {},
   saved: ['2310.08560', '2210.03629', '2407.04620'],
   read: ['2210.03629'],
   votes: [],
@@ -88,6 +106,9 @@ export function updateDemo(fn: (s: DemoState) => DemoState) {
 }
 export function toggle(
   field:
+    | 'joined'
+    | 'people'
+    | 'clubs'
     | 'saved'
     | 'read'
     | 'votes'

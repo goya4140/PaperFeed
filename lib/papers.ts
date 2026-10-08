@@ -1,5 +1,8 @@
 export type Paper = {
   id: string;
+  kind?: '论文' | '研究博客' | '技术报告' | '项目发布';
+  publisher?: string;
+  sourceUrl?: string;
   name: string;
   title: string;
   authors: string[];
@@ -240,6 +243,8 @@ export const papers: Paper[] = [
   {
     id: '2405.04434',
     name: 'DeepSeek-V2',
+    kind: '技术报告',
+    publisher: 'DeepSeek-AI',
     title:
       'DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model',
     authors: ['DeepSeek-AI'],
@@ -295,6 +300,122 @@ export const papers: Paper[] = [
     color: 'green',
     question: '想象轨迹越长，模型误差对策略的影响会更大吗？',
     take: '多步误差和探索策略需要一起看，短期预测准确不一定意味着长期决策可靠。',
+  },
+  {
+    id: 'anthropic-agents',
+    name: 'Building effective agents',
+    title: 'Building effective agents：什么时候需要 Agent？',
+    authors: ['Anthropic'],
+    date: '2024-12-19',
+    topic: 'Agent Systems',
+    kind: '研究博客',
+    publisher: 'Anthropic',
+    sourceUrl:
+      'https://www.anthropic.com/engineering/building-effective-agents',
+    tags: ['Workflow', 'Architecture'],
+    summary:
+      '流程明确，就先用工作流；步骤需要由模型动态决定，再考虑 Agent。这篇工程文章帮助你判断复杂度是否值得。',
+    problem: '所有任务都交给自主 Agent，会不会付出不必要的成本？',
+    method:
+      '区分预定义工作流和模型动态决策，介绍提示链、路由、并行、协调者与评估迭代等模式。',
+    result: '这是基于工程经验的设计建议，不是统一实验条件下的性能排行榜。',
+    caution: '文章发布于 2024 年；工具生态已经变化，架构原则需要结合任务验证。',
+    steps: ['任务边界', '选择模式', '工具接口', '评估迭代'],
+    question: '你的任务中，哪些步骤真的需要模型决定？',
+    take: '编辑解读：先做可测量的简单流程，再让失败案例决定需要增加哪种自主性。',
+    reason: '从 ReAct 的行动循环走向工程架构。',
+    quality: 90,
+    interest: 88,
+    votes: 76,
+    color: 'orange',
+  },
+  {
+    id: 'openai-o1',
+    name: 'Learning to reason',
+    title: 'Learning to reason with LLMs：把计算花在回答之前',
+    authors: ['OpenAI'],
+    date: '2024-09-12',
+    topic: 'Test-Time Learning',
+    kind: '研究博客',
+    publisher: 'OpenAI',
+    sourceUrl: 'https://openai.com/index/learning-to-reason-with-llms/',
+    tags: ['Reasoning', 'Inference Compute'],
+    summary:
+      '训练时学会推理策略，回答时投入更多计算。o1 的研究发布让“推理预算”成为观察模型能力的一个维度。',
+    problem: '模型能否通过更充分的推理处理困难问题？',
+    method:
+      '官方介绍用强化学习改进推理策略，并研究训练计算与测试时计算的影响。',
+    result:
+      '官方报告数学、编程及科学问答等评估；不同采样和选择预算对应不同结果。',
+    caution:
+      '测试时增加计算不等于测试时更新权重；也不等于 TTT 层。不要跨预算比较分数。',
+    steps: ['问题', '推理计算', '检查策略', '答案'],
+    question: '增加推理时间时，你会同时记录哪些成本？',
+    take: '编辑解读：为实际任务画出准确率、延迟与成本曲线，比只选最高分更有帮助。',
+    reason: '连接测试时计算与 Test-Time Learning，理解两者边界。',
+    quality: 95,
+    interest: 80,
+    votes: 138,
+    color: 'rose',
+  },
+  {
+    id: 'openai-deep-research',
+    name: 'Deep research',
+    title: 'Deep research：从搜索结果到可追溯的研究报告',
+    authors: ['OpenAI'],
+    date: '2025-02-02',
+    topic: 'Agent Systems',
+    kind: '项目发布',
+    publisher: 'OpenAI',
+    sourceUrl: 'https://openai.com/index/introducing-deep-research/',
+    tags: ['Research Agents', 'Web Browsing'],
+    summary:
+      '一个复杂问题，需要多轮搜索、阅读和综合。Deep research 的发布展示了长程研究 Agent 的产品形态。',
+    problem: '搜索到资料以后，谁来判断下一步要查什么？',
+    method:
+      '发布文章介绍结合网页浏览、数据分析和多步推理，随发现的信息调整研究路径。',
+    result:
+      '系统生成包含引用的报告；这是产品发布与官方评估，不能当作所有任务的独立验证。',
+    caution:
+      '可能出现事实错误或来源判断失误。这里解读最初发布，不代表当前套餐与可用能力。',
+    steps: ['研究问题', '搜索阅读', '调整路径', '引用报告'],
+    question: '有引用的报告，怎样判断引用真的支持结论？',
+    take: '编辑解读：评估研究 Agent 应逐条核查证据链，而不只是看报告长度。',
+    reason: '与你关注的 Agent Systems 和工具使用相关。',
+    quality: 93,
+    interest: 89,
+    votes: 102,
+    color: 'blue',
+  },
+  {
+    id: 'gemini-robotics',
+    name: 'Gemini Robotics',
+    title: 'Gemini Robotics：语言模型开始输出物理动作',
+    authors: ['Carolina Parada'],
+    date: '2025-03-12',
+    topic: 'World Models',
+    kind: '项目发布',
+    publisher: 'Google DeepMind',
+    sourceUrl:
+      'https://deepmind.google/blog/gemini-robotics-brings-ai-into-the-physical-world/',
+    tags: ['Robotics', 'VLA'],
+    summary:
+      '理解一句指令，还要把它变成机器人动作。Gemini Robotics 将视觉、语言与动作连接起来。',
+    problem: '数字世界里的理解能力，怎样进入不断变化的物理环境？',
+    method:
+      '官方介绍基于 Gemini 2.0 的视觉语言动作模型，以及侧重空间理解的 Robotics-ER。',
+    result:
+      '发布材料展示泛化、交互与灵巧操作的实验和示例；需要结合技术报告查看条件。',
+    caution:
+      '演示成功不等于任意机器人、任意环境都能可靠工作。物理执行仍需独立验证。',
+    steps: ['视觉与指令', '空间理解', '动作生成', '环境反馈'],
+    question: '从仿真到真实机器人，哪些失败不能靠语言反思解决？',
+    take: '编辑解读：与 DreamerV3 对照，区分预测环境和直接生成动作这两种路径。',
+    reason: '连接 World Models 与 Agent Systems 的具身行动。',
+    quality: 94,
+    interest: 74,
+    votes: 115,
+    color: 'green',
   },
 ];
 export const topics = [
@@ -410,5 +531,5 @@ export const collections = [
   },
 ];
 export function source(p: Paper) {
-  return `https://arxiv.org/abs/${p.id}`;
+  return p.sourceUrl || `https://arxiv.org/abs/${p.id}`;
 }
