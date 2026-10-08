@@ -1,59 +1,80 @@
-# PaperFeed · Research Discovery & Discussion
+# PaperFeed · Research, made easier
 
-面向投资人展示的多页面产品原型，依据产品说明文档 v0.1 实现。v0.2 以真实论文阅读与社区工作流为中心，提供六个主页面、八个论文页面和五个主题页面。
+PaperFeed 是一个以兴趣驱动的研究内容社区：发现研究 → 轻松理解 → 表达兴趣 → 参与讨论 → 连接同行 → 沉淀知识。
 
-## 演示入口
+当前开发版 v0.3 面向投资人连续演示，含 12 条真实研究内容、3 篇深入图文和 3 条可播放的配音分镜。原线上站点尚未更新到本版：Sites 对原项目返回 `project_not_found`，需要恢复原账户/工作区访问。不得将本地检查等同于线上验收。
 
-- `/`：编辑专题、个性化推荐、质量排序、发表日期排序、搜索与主题筛选。
-- `/explore`：五个研究方向，关注后影响本地推荐。
-- `/topic/Agent%20Memory` 等：主题说明、精选论文、延伸阅读。
-- `/paper/2303.11366` 等：独立论文页面，可直接打开或刷新。包含阅读导览、方法示意、讨论、笔记、已读状态、分组与导出。
-- `/swipe`：左右滑动与按钮反馈，支持跳过、收藏、撤销。正负反馈也会调整同主题论文的权重。
-- `/discussions`：示例问题、复现经验和阅读笔记，可关注和赞同讨论。
-- `/library`：收藏分组、待阅读/已读筛选、搜索笔记、Markdown 与批量 BibTeX 导出。
-- `/profile`：研究兴趣、阅读统计、笔记、知识库导出，以及带确认的演示重置。
+## 功能与入口
 
-## 建议演示路线（5 分钟）
+| 页面 | 可实际操作的能力 |
+| --- | --- |
+| `/` | 首次兴趣选择、兴趣调整、推荐/热点/关注动态、搜索作者与内容、主题和类型筛选、正负反馈 |
+| `/swipe` | 三条合成配音动态讲解（完整预加载，可跳转），字幕、暂停、静音、进度、切换、前后十秒、收藏、兴趣反馈、完整阅读入口 |
+| `/paper/2303.11366` 等 | 12 个独立详情，快速解读、原文资源、讨论/回复、笔记、收藏、已读、分组、引用和导出 |
+| `/explore`、`/topic/Agent%20Memory` 等 | 5 个研究方向、关注、加入社区、共读提纲、发帖和回复、兴趣附近及关注示例同行 |
+| `/discussions` | 历史示例话题、关注、赞同、实际保存的回复 |
+| `/library` | 收藏分组、已读筛选、笔记检索、Markdown/BibTeX 文件下载 |
+| `/profile` | 兴趣、同行、社区、共读、讨论、回复、阅读和笔记回看，知识库导出、演示重置 |
 
-1. 首页从「为你推荐」切换「社区精选」，观察质量和个人相关性的区别。
-2. 进入主题页，关注新方向，再看首页排序。
-3. 刷论文，表达正负反馈，尝试撤销。
-4. 打开一篇论文，切换 30 秒 / 展开阅读，访问原文或作者项目。
-5. 进入讨论，添加本地问题；保存阅读笔记、标记已读、选一个文库分组。
-6. 在文库找到论文，导出 Markdown 或 BibTeX。
+详见 [7 分钟投资人演示路线](docs/investor-demo.md) 和 [验证进度与来源](docs/implementation-status.md)。
 
-## 数据与功能边界
+## 存储与身份
 
-- 八篇真实论文：Reflexion、MemGPT、ReAct、Voyager、TTT Layers、SWE-bench、DeepSeek-V2、DreamerV3。标题、作者、首发日期与原文入口核验于 2026-09-08。数据来源为每条记录对应的 arXiv 摘要页。
-- 中文导览基于论文摘要整理，非作者原话或实时 AI 回答。“阅读时留意”是编辑建议。方法图是流程示意，非原论文图，不含虚构实验数值。
-- 研究者、社区讨论、计数、质量分和匹配分均为演示数据，不代表真实作者或用户。当前精选不是实时信息流。
-- 初始收藏、笔记及研究兴趣为演示种子。操作使用 `paperfeed-demo-v2` 保存到当前浏览器 localStorage，支持刷新与跨页保留，没有账户同步或服务端社区。
-- 推荐使用可解释前端规则；实际算法与效果未验证。实时 AI、作者认领验证、真实社区发布、API/MCP/CLI、外部账户同步尚未接入。
-- Markdown 与 BibTeX 是实际文件下载，可自行导入 Obsidian、Zotero 等工具。没有向他人发送内容。
+- Cloudflare D1 持久化研究空间，`DB` 绑定由 `.openai/hosting.json` 声明；Drizzle 维护 schema 和提交到仓库的 SQL migration。
+- `/api/state` 提供按身份隔离的读写、数据校验和 revision 并发控制；客户端合并本机待保存操作与服务端记录。
+- Sites 平台提供的已认证用户头可作为空间标识；未登录访客使用 HttpOnly Cookie。当前没有独立注册、登录、真实社交消息或作者认证。
+- localStorage `paperfeed-demo-v3` 保存缓存与待同步操作，兼容旧 v2 记录。页面显示读取/保存/失败状态；失败时保留本机操作并提供重试。清除浏览器 Cookie 会更换匿名空间，不能把匿名身份当成跨设备账号。
+- 同一条笔记并发修改采用后写内容，独立笔记、收藏变化和追加回复可合并。不是多人协同编辑器。
+- 新增讨论保存在自己的演示空间，没有发布给示例人物或真实社区。演示重置会替换当前身份的记录，请先导出需要保留的内容。
 
-## 开发与验证
+## 本地启动
 
-需要 Node.js >=22.13.0。
+Node.js >=22.13.0；React 19、Vinext、Base UI、Cloudflare Workers/D1。无需第三方 AI API 密钥即可演示。
 
 ```bash
 npm ci
-npm run dev
-npm run lint
-npx tsc --noEmit
-node scripts/verify-demo.mjs
+npm run db:generate
 npm run build
 ```
 
-React 19 / Vinext / Shadcn Base UI / Tailwind / Cloudflare Workers。保留原项目依赖与锁文件。
+首次启动本地数据库，执行已提交的 migration（只执行一次）：
 
-`verify-demo.mjs` 验证论文数据完整性、两种排序的差异、负反馈不会删除质量目录、同方向反馈、关注、搜索、日期排序与导出字段。另通过 HTTP 检查所有主页面、八篇论文、五个主题和搜索、讨论/笔记直达入口；不声称已进行浏览器点击或截图验证。
+```bash
+npx wrangler d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_warm_korvac.sql
+npm run dev -- --port 5173
+```
 
-Lint 检查产品代码；原始生成的 `components/ui` 和 `hooks/use-mobile.ts` 存在上游规则不兼容，保持原样并排除 lint。TypeScript 检查覆盖全部组件。
+打开 http://localhost:5173 。`.wrangler/state` 是被忽略的本地数据库，不提交到 Git。修改 schema 后通过 `npm run db:generate` 生成新 migration，不修改已执行的 migration。Sites 正式部署负责应用生产 migration。
 
-Sites 关联保存在 `.openai/hosting.json`，使用私人访问；代码同步到原 GitHub 私有仓库。密钥不进入代码库。
+生产构建可在本机运行：
 
-## v0.3 开发中（2026-10-08）
+```bash
+npx wrangler dev --config dist/server/wrangler.json --port 5173 --persist-to .wrangler/state
+```
 
-目前本地已新增 12 条研究内容、3 篇深入图文、3 条带配音的动态分镜，以及方向社区、回复、共读和兴趣附近。生产构建与类型检查通过，已进行部分真实浏览器流程验证。以上 v0.2 描述为上一已部署版本；本地新功能尚未完成全量验收与部署。
+在 Codex Sites 工作流中使用插件自带 `build-site.mjs` 构建和 source helper 打包；保留现有项目 ID 与访问范围，凭据只走 stdin，不写入仓库。
 
-详细进度、核验来源和未完成事项见 [docs/implementation-status.md](docs/implementation-status.md)。目前仍使用本机存储；没有服务端社区或跨设备同步。原 Sites 项目访问返回 project_not_found，保持原项目身份等待账户/工作区问题解决。
+## 验证
+
+```bash
+npx tsc --noEmit
+node scripts/verify-demo.mjs
+node scripts/verify-state.mjs
+# 先在 5173 启动包含本地 D1 的应用
+node scripts/verify-state.mjs --api
+node scripts/verify-demo.mjs --http
+```
+
+数据检查覆盖推荐信号、搜索、来源分类、深读结构、实际 AAC 文件、引用与完整知识导出。状态检查覆盖校验、旧数据迁移、增量合并；API 检查真实 D1 读写、匿名隔离、过期 revision 拒绝、错误输入和 HTTP 附件。
+
+已实际进行浏览器操作验证，包括配音播放与切换、笔记/讨论/回复、收藏已读分组、刷新保留、数据库中断恢复、真实文件下载及手机布局。检查范围和仍待验证项以进度文档为准。
+
+## 内容来源与真实边界
+
+八篇论文：Reflexion、MemGPT、ReAct、Voyager、TTT Layers、SWE-bench、DeepSeek-V2、DreamerV3。另有 Anthropic Building Effective Agents、OpenAI o1、OpenAI Deep Research、Google DeepMind Gemini Robotics 四条官方博客/项目发布。每条内容标注首发时间和原始链接；这是固定内容集，不是今日实时资讯。
+
+三篇深读区分原文证据、作者报告和编辑类比，示意图为原创重绘，非论文原图。配音由 macOS Tingting 离线生成，音频文件随项目分发；在其他系统播放不需要系统语音。macOS 可用 `node scripts/generate-narration.mjs` 重新生成，需 Python 3、say、afconvert。
+
+推荐使用可解释规则：兴趣、关注、正负反馈、同方向收藏/已读影响排序。质量分、匹配分、历史计数、研究者和互动均为明确标注的演示数据，不是推荐效果评估或真实运营数据。
+
+尚未接入实时采集、自动批量内容生产、真实多人社区及通知、作者认证、外部文献工具账户同步或训练好的推荐模型。线上 D1 与平台身份需要恢复站点访问并部署后验证。

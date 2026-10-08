@@ -12,14 +12,20 @@ const moduleUrl = (s) =>
   'data:text/javascript;base64,' + Buffer.from(s).toString('base64');
 const dataUrl = moduleUrl(compile('../lib/papers.ts'));
 const { papers, topics } = await import(dataUrl);
-const research = compile('../lib/research.ts').replace(
-  "'./papers'",
-  JSON.stringify(dataUrl),
-);
-const { rankPapers, relevance, bibtex, markdown } = await import(
+const deepUrl = moduleUrl(compile('../lib/deep-reads.ts'));
+const research = compile('../lib/research.ts')
+  .replace("'./papers'", JSON.stringify(dataUrl))
+  .replace("'./deep-reads'", JSON.stringify(deepUrl));
+const { rankPapers, relevance, bibtex, markdown, knowledgeExport } = await import(
   moduleUrl(research)
 );
 const base = {
+  replies: {},
+  joined: [],
+  people: [],
+  clubs: [],
+  posts: [],
+  onboarded: true,
   saved: [],
   read: [],
   votes: [],
@@ -114,6 +120,9 @@ const clips = JSON.parse(
 assert.equal(clips.length, 3);
 for (const clip of clips) {
   assert(deepReads[clip.id]);
+  const combined = readFileSync(new URL('../public' + clip.audio, import.meta.url));
+  assert(combined.length > 1000);
+  assert.equal(combined.subarray(4, 8).toString(), 'ftyp');
   assert.equal(clip.scenes.length, 5);
   for (const scene of clip.scenes) {
     assert(scene.duration > 0);
@@ -128,3 +137,28 @@ for (const clip of clips) {
 console.log(
   'Verified save/read ranking signals, official-source citations, three deep articles, and 15 actual AAC media files.',
 );
+
+assert.equal(rankPapers(base, 'personal', '全部', 'Charles Packer')[0].id, '2310.08560');
+const archive = knowledgeExport({ ...base, saved: ['2303.11366'], notes: {'2303.11366':'export note'}, replies: {'comment:2303.11366:0':['export reply']}, posts: [{id:'test-post',topic:'Agent Memory',title:'export post',text:'discussion text',replies:[]}] });
+assert(archive.includes('export note') && archive.includes('export reply') && archive.includes('export post'));
+assert(archive.includes('HumanEval'));
+console.log('Verified author search, combined narration assets and full knowledge export.');
+
+if (process.argv.includes('--http')) {
+  const origin = 'http://localhost:5173';
+  const routes = ['/', '/explore', '/swipe', '/discussions', '/library', '/profile', ...papers.map(p => '/paper/' + p.id), ...topics.map(t => '/topic/' + encodeURIComponent(t.name)), '/paper/2303.11366?tab=deep', '/paper/2303.11366?tab=notes', '/paper/2303.11366?tab=discussion'];
+  for (const path of routes) {
+    const response = await fetch(origin + path);
+    assert.equal(response.status, 200, path);
+    assert((await response.text()).includes('PaperFeed'), path);
+  }
+  assert.equal((await fetch(origin + '/paper/not-a-record')).status, 404);
+  for (const clip of clips) {
+    const response = await fetch(origin + clip.audio, {headers:{Range:'bytes=0-1023'}});
+    assert([200, 206].includes(response.status), clip.audio);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    assert(bytes.length >= 1024);
+    assert.equal(bytes.subarray(4, 8).toString(), 'ftyp');
+  }
+  console.log(`Verified ${routes.length} production routes, unknown-paper 404 and actual narration responses.`);
+}

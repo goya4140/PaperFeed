@@ -5,67 +5,65 @@ export { clips };
 export function ResearchPlayer({ id }: { id: string }) {
   const clip = clips.find((c) => c.id === id)!;
   const audio = useRef<HTMLAudioElement>(null);
-  const [scene, setScene] = useState(0),
-    [playing, setPlaying] = useState(false),
+  const [playing, setPlaying] = useState(false),
     [muted, setMuted] = useState(false),
     [captions, setCaptions] = useState(true),
     [time, setTime] = useState(0),
-    [error, setError] = useState('');
-  const shouldPlay = useRef(false),
-    seekTo = useRef(0);
+    [error, setError] = useState(''),
+    [source, setSource] = useState(''),
+    [attempt, setAttempt] = useState(0);
+  let boundary = 0,
+    scene = clip.scenes.length - 1;
+  for (let i = 0; i < clip.scenes.length; i++) {
+    boundary += clip.scenes[i].duration;
+    if (time < boundary) {
+      scene = i;
+      break;
+    }
+  }
   const current = clip.scenes[scene];
   const duration = clip.scenes.reduce((n, s) => n + s.duration, 0);
-  const offset = clip.scenes
-    .slice(0, scene)
-    .reduce((n, s) => n + s.duration, 0);
   useEffect(() => {
+    // The static preview may not provide byte ranges. A complete local Blob
+    // gives browsers a seekable track without depending on server range support.
+    const controller = new AbortController();
     const node = audio.current;
+    let owned = '';
+    setSource('');
+    setError('');
+    void fetch(clip.audio, { signal: controller.signal }).then(async response => {
+      if (!response.ok) throw new Error('Media unavailable');
+      const bytes = await response.arrayBuffer();
+      if (controller.signal.aborted) return;
+      owned = URL.createObjectURL(new Blob([bytes], { type: 'audio/mp4' }));
+      setSource(owned);
+    }).catch(() => {
+      if (!controller.signal.aborted) setError('音频加载失败，请重新加载。');
+    });
     return () => {
-      shouldPlay.current = false;
+      controller.abort();
       node?.pause();
+      if (owned) URL.revokeObjectURL(owned);
     };
-  }, []);
-  useEffect(() => {
-    const node = audio.current;
-    if (!node) return;
-    node.load();
-  }, [scene]);
+  }, [clip.audio, attempt]);
   async function play() {
     if (!audio.current) return;
     setError('');
-    shouldPlay.current = true;
     try {
       await audio.current.play();
       setPlaying(true);
     } catch {
-      shouldPlay.current = false;
       setPlaying(false);
       setError('播放未开始，请再点击播放。');
     }
   }
   function pause() {
-    shouldPlay.current = false;
     audio.current?.pause();
     setPlaying(false);
   }
   function seek(value: number) {
-    let rest = value,
-      index = 0;
-    while (
-      index < clip.scenes.length - 1 &&
-      rest >= clip.scenes[index].duration
-    ) {
-      rest -= clip.scenes[index].duration;
-      index++;
-    }
-    if (index === scene) {
-      if (audio.current) audio.current.currentTime = rest;
-      setTime(value);
-    } else {
-      seekTo.current = rest;
-      setScene(index);
-      setTime(value);
-    }
+    if (audio.current) audio.current.currentTime = value;
+    setTime(value);
   }
   const stamp = (v: number) =>
     `${Math.floor(v / 60)}:${String(Math.floor(v % 60)).padStart(2, '0')}`;
@@ -76,26 +74,15 @@ export function ResearchPlayer({ id }: { id: string }) {
     >
       <audio
         ref={audio}
-        src={current.audio}
+        src={source || undefined}
         muted={muted}
-        preload="metadata"
-        onLoadedMetadata={() => {
-          if (audio.current) {
-            audio.current.currentTime = seekTo.current;
-            seekTo.current = 0;
-          }
-          if (shouldPlay.current) void play();
-        }}
-        onTimeUpdate={() => setTime(offset + (audio.current?.currentTime || 0))}
+        preload="auto"
+        onTimeUpdate={() => setTime(audio.current?.currentTime || 0)}
+        onPause={() => setPlaying(false)}
+        onPlay={() => setPlaying(true)}
         onEnded={() => {
-          if (scene < clip.scenes.length - 1) {
-            seekTo.current = 0;
-            setScene(scene + 1);
-          } else {
-            shouldPlay.current = false;
-            setPlaying(false);
-            setTime(duration);
-          }
+          setPlaying(false);
+          setTime(duration);
         }}
         onError={() => {
           pause();
@@ -127,18 +114,16 @@ export function ResearchPlayer({ id }: { id: string }) {
       <div className="player-controls">
         <button
           className="btn"
+          disabled={!source}
           onClick={() => {
             if (playing) pause();
             else {
-              if (time >= duration) {
-                shouldPlay.current = true;
-                setPlaying(true);
-                seek(0);
-              } else void play();
+              if (time >= duration) seek(0);
+              void play();
             }
           }}
         >
-          {playing ? '暂停' : '播放讲解'}
+          {!source ? '加载讲解…' : playing ? '暂停' : '播放讲解'}
         </button>
         <button
           className="btn"
@@ -158,6 +143,8 @@ export function ResearchPlayer({ id }: { id: string }) {
           {stamp(time)} / {stamp(duration)}
         </span>
       </div>
+      <div className="player-timeline">
+      <button aria-label="后退十秒" onClick={() => seek(Math.max(0, time - 10))}>−10</button>
       <input
         className="player-seek"
         aria-label="播放进度"
@@ -167,8 +154,16 @@ export function ResearchPlayer({ id }: { id: string }) {
         step="0.1"
         value={Math.min(time, duration)}
         onChange={(e) => seek(Number(e.target.value))}
+        onKeyDown={(e) => {
+          const next = e.key === 'Home' ? 0 : e.key === 'End' ? duration
+            : e.key === 'ArrowRight' ? Math.min(duration, time + 1)
+            : e.key === 'ArrowLeft' ? Math.max(0, time - 1) : null;
+          if (next !== null) { e.preventDefault(); seek(next); }
+        }}
       />
-      {error && <p role="alert">{error}</p>}
+      <button aria-label="前进十秒" onClick={() => seek(Math.min(duration, time + 10))}>+10</button>
+      </div>
+      {error && <p role="alert">{error} <button className="btn" onClick={() => setAttempt(n => n + 1)}>重新加载</button></p>}
       <p className="player-footnote">
         合成配音与动态分镜，非作者演讲；事实依据见完整解读的原文链接。
       </p>

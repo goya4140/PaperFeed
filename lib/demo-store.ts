@@ -1,87 +1,164 @@
 'use client';
 import { useSyncExternalStore } from 'react';
-export type DemoState = {
-  onboarded: boolean;
-  joined: string[];
-  people: string[];
-  clubs: string[];
-  posts: {
-    id: string;
-    topic: string;
-    title: string;
-    text: string;
-    replies: string[];
-  }[];
-  replies: Record<string, string[]>;
-  saved: string[];
-  read: string[];
-  votes: string[];
-  following: string[];
-  feedback: Record<string, number>;
-  notes: Record<string, string>;
-  comments: Record<string, string[]>;
-  folders: Record<string, string>;
-  threadVotes: string[];
-  followThreads: string[];
-};
-export const initial: DemoState = {
-  onboarded: false,
-  joined: [],
-  people: [],
-  clubs: [],
-  posts: [],
-  replies: {},
-  saved: ['2310.08560', '2210.03629', '2407.04620'],
-  read: ['2210.03629'],
-  votes: [],
-  following: ['Agent Memory', 'Agent Systems'],
-  feedback: {},
-  notes: {
-    '2210.03629':
-      '把 Thought → Action → Observation 的循环接入工具执行器。下一步：记录工具失败时的恢复轨迹。',
-  },
-  comments: {},
-  folders: {
-    '2310.08560': 'agents',
-    '2210.03629': 'agents',
-    '2407.04620': 'ideas',
-  },
-  threadVotes: [],
-  followThreads: [],
-};
-let state = initial;
-let loaded = false;
+import { initial, restoreState, mergeChanges, type DemoState } from './state';
+export { initial, type DemoState } from './state';
+let state = initial,
+  base = initial,
+  revision = 0;
+let loaded = false,
+  ready = false,
+  booting = false,
+  busy = false,
+  pending = false;
+let status = '正在读取研究空间…';
 const listeners = new Set<() => void>();
-const key = 'paperfeed-demo-v2';
+const key = 'paperfeed-demo-v3';
+const emit = () => listeners.forEach((f) => f());
+const same = (a: unknown, b: unknown) =>
+  JSON.stringify(a) === JSON.stringify(b);
+function cache() {
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify({ state, base, revision, pending }),
+    );
+  } catch {
+    status = pending
+      ? '本机缓存不可用；请保持页面打开并重试数据库保存。'
+      : '已保存到数据库，但本机缓存不可用。';
+  }
+}
 function readStorage() {
   if (loaded || typeof window === 'undefined') return;
   loaded = true;
   try {
-    const raw = localStorage.getItem(key);
+    const raw = localStorage.getItem(key),
+      legacy = localStorage.getItem('paperfeed-demo-v2');
     if (raw) {
-      const x = JSON.parse(raw);
-      if (x && Array.isArray(x.saved) && Array.isArray(x.following)) {
-        state = { ...initial, ...x };
-      }
+      const data = JSON.parse(raw);
+      state = restoreState(data.state);
+      base = restoreState(data.base);
+      revision = Number.isSafeInteger(data.revision) ? data.revision : 0;
+      pending = data.pending === true;
+    } else if (legacy) {
+      state = restoreState(JSON.parse(legacy));
+      base = initial;
+      pending = true;
     }
   } catch {
     state = initial;
+    base = initial;
+    pending = false;
+    status = '本机记录无法读取，正在尝试从数据库恢复。';
+  }
+}
+async function initialize() {
+  if (booting || ready || typeof window === 'undefined') return;
+  booting = true;
+  const captured = state;
+  try {
+    const response = await fetch('/api/state', { cache: 'no-store' });
+    if (!response.ok) throw new Error();
+    const data = (await response.json()) as {
+      state: unknown;
+      revision: number;
+    };
+    if (data.state) {
+      const remote = restoreState(data.state);
+      state = mergeChanges(pending ? base : captured, state, remote);
+      base = remote;
+      revision = data.revision;
+      pending = !same(state, remote);
+    } else {
+      revision = 0;
+      pending = true;
+    }
+    ready = true;
+    status = pending ? '正在保存到数据库…' : '已保存到数据库';
+    cache();
+    emit();
+  } catch {
+    status = '数据库暂不可用；操作保留在本机，等待重试。';
+    emit();
+  } finally {
+    booting = false;
+  }
+  if (ready && pending) void flush();
+}
+async function flush() {
+  if (busy) return;
+  if (!ready) {
+    void initialize();
+    return;
+  }
+  if (!pending) return;
+  busy = true;
+  status = '正在保存到数据库…';
+  emit();
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const snapshot = state,
+        baseline = base;
+      const response = await fetch('/api/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: snapshot, revision }),
+      });
+      const data = (await response.json()) as {
+        state: unknown;
+        revision: number;
+      };
+      if (response.status === 409) {
+        const remote = data.state ? restoreState(data.state) : initial;
+        state = mergeChanges(baseline, state, remote);
+        base = remote;
+        revision = data.revision;
+        pending = true;
+        cache();
+        emit();
+        continue;
+      }
+      if (!response.ok) throw new Error();
+      base = snapshot;
+      revision = data.revision;
+      pending = !same(state, snapshot);
+      status = pending ? '正在保存到数据库…' : '已保存到数据库';
+      cache();
+      emit();
+      if (!pending) break;
+    }
+    if (pending) throw new Error();
+  } catch {
+    status = '数据库保存未完成；已保留本机操作，可重试。';
+    cache();
+    emit();
+  } finally {
+    busy = false;
   }
 }
 function subscribe(fn: () => void) {
   listeners.add(fn);
   readStorage();
+  void initialize();
   const onStorage = (e: StorageEvent) => {
-    if (e.key === key) {
+    if (e.key === key && !busy) {
       loaded = false;
+      ready = false;
       readStorage();
-      listeners.forEach((f) => f());
+      emit();
+      void initialize();
     }
   };
+  const onOnline = () => {
+    ready = false;
+    void initialize();
+  };
   window.addEventListener('storage', onStorage);
+  window.addEventListener('online', onOnline);
   return () => {
     listeners.delete(fn);
     window.removeEventListener('storage', onStorage);
+    window.removeEventListener('online', onOnline);
   };
 }
 export function useDemo() {
@@ -94,15 +171,33 @@ export function useDemo() {
     () => initial,
   );
 }
+export function useStorageStatus() {
+  return useSyncExternalStore(
+    subscribe,
+    () => status,
+    () => '正在读取研究空间…',
+  );
+}
+export function retrySync() {
+  if (busy || booting) return;
+  ready = false;
+  status = '正在重新连接…';
+  emit();
+  void initialize();
+}
 export function updateDemo(fn: (s: DemoState) => DemoState) {
   readStorage();
-  state = fn(state);
   try {
-    localStorage.setItem(key, JSON.stringify(state));
+    state = restoreState(fn(state));
   } catch {
-    /* Demo remains usable when storage is unavailable. */
+    status = '记录超出保存范围，请先导出并整理。';
+    emit();
+    return;
   }
-  listeners.forEach((f) => f());
+  pending = true;
+  cache();
+  emit();
+  void flush();
 }
 export function toggle(
   field:
@@ -125,5 +220,5 @@ export function toggle(
   }));
 }
 export function resetDemo() {
-  updateDemo(() => ({ ...initial }));
+  updateDemo(() => structuredClone(initial));
 }

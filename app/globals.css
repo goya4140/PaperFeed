@@ -3451,3 +3451,74 @@ textarea::placeholder {
     flex-wrap: wrap;
   }
 }
+.storage-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f3f5ee;
+  border: 1px solid #dce2d0;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.8;
+  margin-bottom: 22px;
+  color: #4d6041;
+}
+.storage-status button {
+  text-decoration: underline;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.profile-heading h1 > span {
+  display: inline-block;
+  color: #626c57;
+  font-size: 11px;
+}
+.citation-text {
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid #dce1d2;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  resize: vertical;
+}
+.swipe-paper .research-player {
+  touch-action: pan-y;
+}
+.swipe-paper .player-scene {
+  touch-action: none;
+}
+.summary-heading > small {
+  font-size: 12px;
+  color: #6d7565;
+}
+
+@media (max-width: 767px) {
+  .swipe-page .page-heading { margin-bottom: 14px; }
+  .swipe-page .page-heading .eyebrow,
+  .swipe-page .page-heading > div > p:last-child { display: none; }
+  .swipe-page .page-heading h1 { font-size: 21px; line-height: 1.4; }
+  .swipe-page .swipe-progress { margin-bottom: 14px; }
+  .swipe-paper { padding: 16px; }
+  .swipe-paper > h2 { font-size: 18px; line-height: 1.45; margin: 12px 0; }
+  .swipe-paper > .authors { display: none; }
+  .swipe-paper .research-player { margin: 12px -4px; padding: 14px; }
+  .swipe-paper .player-scene { min-height: 0; padding: 12px 0; }
+  .swipe-paper .player-scene > small { display: none; }
+  .swipe-paper .player-scene h2 { font-size: 22px; margin: 4px 0 16px; }
+  .swipe-paper .player-nodes { gap: 10px; }
+  .swipe-paper .player-nodes > div { padding: 9px 12px; gap: 12px; font-size: 14px; }
+  .swipe-paper .player-caption { min-height: 78px; padding: 10px 0; font-size: 14px; line-height: 1.7; }
+  .swipe-paper .player-controls { gap: 5px; }
+  .swipe-paper .player-controls .btn { min-height: 40px; padding: 6px; }
+  .swipe-paper .player-seek { margin: 12px 0; }
+  .swipe-paper .player-footnote { font-size: 10px; line-height: 1.6; }
+  .swipe-controls { background: #fafbf7; border: 1px solid #e2e6da; border-radius: 12px; padding: 8px; gap: 12px; }
+}
+
+.player-timeline { display: flex; align-items: center; gap: 10px; }
+.player-timeline .player-seek { flex: 1; min-width: 0; }
+.player-timeline > button { min-width: 40px; min-height: 40px; color: #e0bd80; border: 1px solid #718276; border-radius: 7px; font-size: 12px; }

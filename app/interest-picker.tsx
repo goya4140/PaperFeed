@@ -24,8 +24,8 @@ export function InterestPicker() {
       >
         调整研究兴趣
       </button>
-      <Dialog
-        open={!s.onboarded || edit}
+      {(!s.onboarded || edit) && <Dialog
+        open
         onOpenChange={(v) => {
           if (!v && s.onboarded) setEdit(false);
         }}
@@ -66,7 +66,7 @@ export function InterestPicker() {
             开启我的研究 Feed
           </button>
         </DialogContent>
-      </Dialog>
+      </Dialog>}
     </>
   );
 }

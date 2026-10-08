@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from './native-link';
 import { deepReads } from '@/lib/deep-reads';
 import { papers } from '@/lib/papers';
 export function DeepArticle({ id }: { id: string }) {

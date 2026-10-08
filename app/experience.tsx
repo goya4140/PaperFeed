@@ -1,12 +1,12 @@
 'use client';
+import { StorageStatus } from './storage-status';
 import { Community, CommunityRecords, Nearby, Replies } from './community';
 import { DeepArticle } from './deep-read';
 import { ResearchPlayer, clips } from './research-player';
 import { InterestPicker } from './interest-picker';
 import { deepReads } from '@/lib/deep-reads';
 import { useRef, useState, type ReactNode } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from './native-link';
 import {
   ArrowUpRight,
   ArrowRight,
@@ -66,6 +66,7 @@ import {
 import { useDemo, toggle, updateDemo, resetDemo } from '@/lib/demo-store';
 import {
   recommendationReason,
+  knowledgeExport,
   relevance,
   rankPapers,
   bibtex,
@@ -286,7 +287,7 @@ function RightRail() {
         <br />
         社区与推荐分数为演示数据
         <br />
-        你的操作仅保存在此浏览器
+        你的操作保存在演示研究空间
       </p>
     </aside>
   );
@@ -305,7 +306,6 @@ export default function Experience({
   searchQuery?: string;
 }) {
   const s = useDemo();
-  const router = useRouter();
   const [search, setSearch] = useState('');
   const [about, setAbout] = useState(false);
   const active = nav.find((n) => n.href === route);
@@ -402,7 +402,7 @@ export default function Experience({
             className="global-search"
             onSubmit={(e) => {
               e.preventDefault();
-              router.push('/?q=' + encodeURIComponent(search));
+              window.location.assign('/?q=' + encodeURIComponent(search));
             }}
           >
             <Search size={17} />
@@ -415,13 +415,14 @@ export default function Experience({
             <kbd>↵</kbd>
           </form>
           <span className="demo-pill">
-            <i /> DEMO v0.2
+            <i /> DEMO v0.3
           </span>
           <Link href="/profile" aria-label="我的主页">
             <Avatar name="LC" />
           </Link>
         </header>
         <div className={`workspace ${paperId ? 'reading-workspace' : ''}`}>
+          <StorageStatus />
           {paperId ? (
             <PaperPage id={paperId} initialTab={initialTab} />
           ) : topicName ? (
@@ -457,7 +458,7 @@ export default function Experience({
             {[
               [
                 '找到适合你的',
-                '质量和兴趣分开展示。主题关注与正负反馈会改变本地排序。',
+                '质量和兴趣分开展示。主题关注、收藏与正负反馈会改变推荐排序。',
               ],
               [
                 '让讨论留得住',
@@ -475,8 +476,7 @@ export default function Experience({
             ))}
           </div>
           <p className="footnote">
-            八篇论文的标题、作者与原文入口已核验。中文阅读导览基于摘要整理；“阅读时留意”为编辑建议。社区人物、讨论、赞同数及匹配分均为样例，不代表真实作者或用户。没有调用实时
-            AI 或连接外部账户。操作保存在当前浏览器，可在研究主页重置。
+            十二条研究内容保留核验来源，三篇提供深入图文和配音分镜。原文报告、编辑例子和建议分别标注。社区人物与历史互动为示例，新增操作写入个人演示空间。推荐采用规则，未接入实时采集、作者认证或真实社交消息。
           </p>
           <Link
             className="btn primary"
@@ -491,7 +491,6 @@ export default function Experience({
   );
 }
 function Feed({ initialQuery }: { initialQuery: string }) {
-  const router = useRouter();
   const s = useDemo();
   const [mode, setMode] = useState('personal');
   const [topic, setTopic] = useState('全部');
@@ -598,7 +597,7 @@ function Feed({ initialQuery }: { initialQuery: string }) {
             <button
               onClick={() => {
                 setQuery('');
-                router.replace('/');
+                window.location.replace('/');
               }}
             >
               <X size={14} />
@@ -772,7 +771,6 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
   const p = papers.find((p) => p.id === id);
   const s = useDemo();
   const [tab, setTab] = useState(initialTab);
-  const [length, setLength] = useState('short');
   const [note, setNote] = useState<string | null>(null);
   const [comment, setComment] = useState('');
   const [kind, setKind] = useState('问题');
@@ -857,15 +855,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                     <Sparkles size={16} />
                     先读这一段
                   </span>
-                  <Tabs
-                    value={length}
-                    onValueChange={(v) => setLength(String(v))}
-                  >
-                    <TabsList>
-                      <TabsTrigger value="short">30 秒</TabsTrigger>
-                      <TabsTrigger value="long">展开阅读</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                  <small>30 秒读懂亮点</small>
                 </div>
                 <p>{p.summary}</p>
               </div>
@@ -891,18 +881,22 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                   <p>{p.method}</p>
                 </div>
               </section>
-              {length === 'long' && (
-                <section className="reading-section">
-                  <span>03</span>
-                  <div>
-                    <h2>结果与阅读线索</h2>
-                    <p>{p.result}</p>
-                    <p>
-                      建议先在原文中定位方法与实验设置，再核对任务条件、基线和评估预算。上方示意图只用于帮助理解流程，不代表论文的定量结论。
-                    </p>
-                  </div>
-                </section>
-              )}
+              <section className="reading-section">
+                <span>03</span>
+                <div>
+                  <h2>原文报告的关键证据</h2>
+                  <p>{p.result}</p>
+                  <small>来源：上方原文；作者报告，不代表独立复现</small>
+                </div>
+              </section>
+              <section className="reading-section">
+                <span>04</span>
+                <div>
+                  <h2>与你的研究有什么关系？</h2>
+                  <p>{p.take}</p>
+                  <small>编辑解读，可作为讨论起点</small>
+                </div>
+              </section>
               <div className="reading-caution">
                 <Lightbulb size={21} />
                 <div>
@@ -966,7 +960,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                   <Avatar name="LC" />
                   <div>
                     <strong>
-                      Lin Chen <span>你 · 本地</span>
+                      Lin Chen <span>你 · 演示身份</span>
                     </strong>
                     <p>{c}</p>
                     <Replies id={`comment:${p.id}:${i}`} />
@@ -989,7 +983,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                     },
                   }));
                   setComment('');
-                  tell('讨论已添加，仅保存在本机');
+                  tell('讨论已记录，保存状态见页面上方');
                 }}
               >
                 <h3>说说你的看法</h3>
@@ -1007,10 +1001,10 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="具体的问题，常常是下一次研究的起点。"
-                  maxLength={3000}
+                  maxLength={1800}
                 />
                 <div>
-                  <small>仅在当前浏览器保存，不向他人发送。</small>
+                  <small>保存在你的演示空间，不向示例人物发送。</small>
                   <button className="btn primary" disabled={!comment.trim()}>
                     <Send size={16} />
                     添加讨论
@@ -1022,7 +1016,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
             <section className="notes-editor">
               <div className="section-title-row">
                 <h2>留给未来的自己</h2>
-                <span className="tiny">本机笔记</span>
+                <span className="tiny">演示空间笔记</span>
               </div>
               <p>贡献、疑问，或者与你手头项目的连接。</p>
               <textarea
@@ -1044,7 +1038,7 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
                         : [...d.saved, p.id],
                     }));
                     setNote(null);
-                    tell('笔记已保存到本机文库');
+                    tell('笔记已记录，保存状态见页面上方');
                   }}
                 >
                   保存笔记 <Check size={16} />
@@ -1204,11 +1198,35 @@ function PaperPage({ id, initialTab }: { id: string; initialTab: string }) {
           <DialogDescription>
             {p.name} · 含原文链接与标准元数据
           </DialogDescription>
+          <button
+            className="btn"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(
+                  `${p.authors.join(', ')} (${p.date.slice(0, 4)}). ${p.title}. ${source(p)}`,
+                );
+                tell('引用已复制');
+              } catch {
+                toast.add({
+                  title: '剪贴板不可用，请选中下方引用手动复制',
+                  type: 'error',
+                });
+              }
+            }}
+          >
+            复制引用
+          </button>
+          <textarea
+            className="citation-text"
+            aria-label="可手动复制的引用"
+            readOnly
+            value={`${p.authors.join(', ')} (${p.date.slice(0, 4)}). ${p.title}. ${source(p)}`}
+          />
           <button className="export-choice" onClick={() => exportFile('md')}>
             <NotebookPen />
             <span>
               <strong>Markdown</strong>
-              <small>阅读导览 + 已保存笔记 + 本地讨论</small>
+              <small>深入解读 + 已保存笔记 + 讨论</small>
             </span>
             <Download />
           </button>
@@ -1393,7 +1411,7 @@ function Library() {
             {s.saved.length} 篇收藏 ·{' '}
             {s.saved.filter((id) => s.read.includes(id)).length} 篇已读 ·{' '}
             {Object.values(s.notes).filter(Boolean).length} 份笔记{' '}
-            <span className="local-label">本机保存</span>
+            <span className="local-label">研究空间保存</span>
           </p>
         </div>
         <button
@@ -1520,7 +1538,7 @@ function Library() {
         />
       )}
       <p className="footnote" style={{ marginTop: 25 }}>
-        收藏、笔记与分组保存在当前浏览器。导出的文件由你保管，未连接外部工具账户。
+        收藏、笔记与分组保存在你的研究空间；数据库状态见页面上方。导出文件由你保管。
       </p>
     </>
   );
@@ -1573,8 +1591,29 @@ function Swipe() {
         <>
           <div
             className="swipe-paper"
-            style={{ touchAction: 'pan-x' }}
+            style={{ touchAction: 'pan-y' }}
+            tabIndex={0}
+            aria-label="研究短内容，左右方向键切换"
+            onKeyDown={(e) => {
+              if ((e.target as HTMLElement).closest('input,button,a')) return;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                setIndex((i) =>
+                  Math.max(
+                    0,
+                    Math.min(
+                      shortPapers.length - 1,
+                      i + (e.key === 'ArrowRight' ? 1 : -1),
+                    ),
+                  ),
+                );
+              }
+            }}
             onTouchStart={(e) => {
+              if ((e.target as HTMLElement).closest('input,button,a')) {
+                touch.current = null;
+                return;
+              }
               touch.current = {
                 x: e.touches[0].clientX,
                 y: e.touches[0].clientY,
@@ -1675,7 +1714,7 @@ function Swipe() {
           <Check size={34} />
           <h2>今天的好奇心，已收好。</h2>
           <p>
-            这些选择会调整此浏览器中的推荐排序。
+            这些选择会调整你的研究空间中的推荐排序。
             <br />
             看看你的 Feed 有什么变化。
           </p>
@@ -1803,26 +1842,8 @@ function Profile() {
             <button
               className="btn full"
               onClick={() => {
-                download(
-                  papers
-                    .filter(
-                      (p) =>
-                        s.saved.includes(p.id) ||
-                        s.notes[p.id] ||
-                        s.comments[p.id]?.length,
-                    )
-                    .map((p) => markdown(p, s))
-                    .join('\n---\n') +
-                    '\n\n## 我的社区讨论\n' +
-                    s.posts
-                      .map(
-                        (p) =>
-                          `### ${p.title}\n${p.topic}\n${p.text}\n${(s.replies[p.id] || []).join('\n')}`,
-                      )
-                      .join('\n\n'),
-                  'paperfeed-notes.md',
-                );
-                tell('已导出全部收藏与笔记');
+                download(knowledgeExport(s), 'paperfeed-notes.md');
+                tell('已生成知识库文件，浏览器将开始下载');
               }}
             >
               <Download size={16} />
@@ -1832,7 +1853,7 @@ function Profile() {
           <section className="demo-settings">
             <h3>演示设置</h3>
             <p>
-              状态仅保存在当前浏览器。重置后恢复初始收藏、笔记和兴趣，方便重新演示。
+              研究空间使用数据库持久化，本机缓存用于恢复未完成的保存。未登录时按此浏览器区分；重置后恢复演示种子。
             </p>
             <button className="btn" onClick={() => setReset(true)}>
               <RotateCcw size={16} />
@@ -1845,7 +1866,7 @@ function Profile() {
         <DialogContent>
           <DialogTitle>恢复初始演示状态？</DialogTitle>
           <DialogDescription>
-            本机新增的笔记、收藏和讨论将被清除。需要保留的内容可先导出。
+            当前演示空间新增的笔记、收藏和讨论将被清除。需要保留的内容可先导出。
           </DialogDescription>
           <button className="btn" onClick={() => setReset(false)}>
             保留当前内容

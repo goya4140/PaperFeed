@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
+import Link from './native-link';
 import { papers, topics, threads } from '@/lib/papers';
 import { useDemo, toggle, updateDemo } from '@/lib/demo-store';
 import { download } from '@/lib/research';

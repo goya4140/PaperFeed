@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from './native-link';
 export default function NotFound() {
   return (
     <main style={{ padding: '15vh 10%', textAlign: 'center' }}>
