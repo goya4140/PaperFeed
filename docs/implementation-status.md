@@ -1,6 +1,6 @@
 # 完整 Demo 目标进度 · 2026-10-08
 
-目标尚未完成，以下本地验收不代表已部署到线上。
+Demo 已部署至当前账户的 Sites；完整目标仍待登录后的线上功能验收。以下本地验收与生产验收分别记录。
 
 ## 当前实现
 
@@ -37,12 +37,12 @@
 | 存储、错误和恢复 | D1 API、并发合并检查、断连保存/恢复/刷新 | 生产 D1 与平台身份隔离 |
 | 桌面与手机 | 浏览器视口截图、导航及溢出检查 | 线上环境重复核心路线 |
 | README 和演示路线 | README.md、investor-demo.md 已写 | 发布后更新部署结果 |
-| GitHub、原站部署 | 原仓库 main 已推送 f85a77e（数据库与生产流程修复） | 原站部署与线上验收 |
+| GitHub、原站部署 | 原仓库 main 已推送 f85a77e（数据库与生产流程修复） | 当前账户新站部署已成功，登录后线上验收待完成 |
 
 ## 外部部署问题
 
 原 manifest 项目 `appgprj_6a9fb6af9a308191a68c7eab04637d80` 的 get_site 多轮返回 `project_not_found`，source credential 也曾返回相同错误。
-当前 Sites 账户列表只含 wanglinhao4140 下其他项目，原 PaperFeed 曾属于 lij850601 账户。未创建替代站点、未更换项目 ID、未更改访问权限。需要恢复原账户/工作区的 Sites 访问，才能完成源码同步、原站部署与线上验收。
+当前 Sites 账户列表只含 wanglinhao4140 下其他项目，原 PaperFeed 曾属于 lij850601 账户。此前未创建替代站点。用户随后明确授权使用当前账户构建 Sites，已按下节迁移；原站点保持不变，后续使用新站。
 
 ## 来源核验
 
@@ -59,3 +59,15 @@
 - https://deepmind.google/blog/gemini-robotics-brings-ai-into-the-physical-world/ （2025-03-12）
 
 所有图示为编辑重绘，配音为 macOS Tingting 离线合成。生成脚本 scripts/generate-narration.mjs；播放无需系统语音或第三方 TTS。
+
+## 当前账户站点迁移 · 2026-10-08
+
+用户明确要求使用自己的当前账户构建 Sites。已创建新私有站点，项目 ID `appgprj_6ac7b0a1e7d0819189f74bca369562d9`，所有者 wanglinhao4140@gmail.com；旧站点及其记录保留。此版本解除原账户访问依赖。
+
+目标地址：https://paperfeed-research-demo.wanglinhao4140.chatgpt.site
+
+已完成源码同步、TypeScript / 内容 / 状态检查与 Sites 生产构建，带 DB 绑定的正式部署返回 `succeeded`。
+
+首个成功版本的源提交：`eca856524375c36d4bdb8769e7aa2669940cd337`；版本：`appgprj_6ac7b0a1e7d0819189f74bca369562d9~appgver_cf077978763881919a0e30c029e4d4f7`；部署：`appgdep_6ac7b12659688191acbdfc3ea08d0151`。本记录之后只同步说明文档，应用代码保持一致。
+
+线上浏览器实际打开站点，显示“登录后即可访问”，点击“使用 ChatGPT 继续”后进入 OpenAI 登录页。当前浏览器没有该账户的登录会话；未绕过私有访问，也未扩大分享范围。需要所有者在浏览器完成登录后继续在线验收：推荐→播放→深读→保存→社区→个人空间→导出，尤其是生产 D1 与平台身份隔离。当前不能声称完整线上路线已通过。
