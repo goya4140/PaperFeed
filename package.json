@@ -11,7 +11,15 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "oxlint",
     "format": "oxfmt",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "ios:content": "node scripts/export-ios-content.mjs",
+    "ios:api": "node server/server.mjs",
+    "ios:verify": "node scripts/verify-ios-api.mjs && swift run --package-path ios PaperPopVerify",
+    "ios:preview": "bash scripts/build-mac-preview.sh",
+    "ios:verify:client": "node scripts/verify-ios-store.mjs",
+    "ios:doctor": "python3 scripts/ios-simulator.py --diagnose",
+    "ios:setup": "python3 scripts/ios-simulator.py --setup-only",
+    "ios:simulator": "python3 scripts/ios-simulator.py"
   },
   "dependencies": {
     "react": "19.2.6",

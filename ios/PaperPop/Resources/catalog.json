@@ -1,0 +1,625 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-20",
+  "topics": [
+    {
+      "id": "Agent Memory",
+      "name": "Agent Memory",
+      "description": "长期记忆、经验复用与遗忘机制",
+      "prompt": "Agent 怎样记住有用的经验？"
+    },
+    {
+      "id": "Agent Systems",
+      "name": "Agent Systems",
+      "description": "推理、工具调用与真实任务评估",
+      "prompt": "从能回答，走向能完成任务。"
+    },
+    {
+      "id": "Test-Time Learning",
+      "name": "Test-Time Learning",
+      "description": "推理阶段的学习与序列建模",
+      "prompt": "让计算过程本身成为学习。"
+    },
+    {
+      "id": "World Models",
+      "name": "World Models",
+      "description": "环境建模、想象与长程规划",
+      "prompt": "行动之前，先理解可能的未来。"
+    },
+    {
+      "id": "Efficient Models",
+      "name": "Efficient Models",
+      "description": "稀疏专家、注意力与推理成本",
+      "prompt": "每一次推理，都值得更高效。"
+    }
+  ],
+  "papers": [
+    {
+      "id": "2303.11366",
+      "name": "Reflexion",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "authors": [
+        "Noah Shinn",
+        "Federico Cassano",
+        "Edward Berman",
+        "Ashwin Gopinath",
+        "Karthik Narasimhan",
+        "Shunyu Yao"
+      ],
+      "date": "2023-03-20",
+      "kind": "论文",
+      "topic": "Agent Memory",
+      "tags": [
+        "Language Agents",
+        "Reflection"
+      ],
+      "summary": "Agent 犯过的错，能不能成为下一次的经验？Reflexion 把任务反馈写成语言记忆，让后续尝试有所依据。",
+      "problem": "试错学习通常需要大量样本和参数训练。语言 Agent 是否可以通过文字反馈改进决策？",
+      "method": "执行任务后生成反思文本，放入情景记忆缓冲区；下一轮尝试读取这些反馈，而不更新模型权重。",
+      "result": "论文在决策、编程与推理任务上评估该框架，并比较不同反馈方式的效果。",
+      "limitation": "阅读时应区分单次推理能力与多次尝试后的表现，检查反馈来源及重试预算。",
+      "steps": [
+        "执行任务",
+        "评价反馈",
+        "语言反思",
+        "记忆 → 重试"
+      ],
+      "sourceUrl": "https://arxiv.org/html/2303.11366v4",
+      "projectUrl": null,
+      "poster": {
+        "title": "失败以后，给下一次尝试留一张便签",
+        "hook": "你让一个 Agent 修复代码，它连续三次犯了同一个错误。与其只说“再试一次”，能不能把上一次失败变成下一次可以读取的经验？Reflexion 的切入点正是这里。",
+        "status": "curated",
+        "sourceUrl": "https://arxiv.org/html/2303.11366v4",
+        "version": "editorial-1",
+        "flow": [
+          "Actor 执行",
+          "Evaluator 反馈",
+          "Self-reflection 写经验",
+          "下轮读取记忆"
+        ],
+        "sections": [
+          {
+            "title": "学习发生在哪里？",
+            "label": "原文方法 · §3",
+            "text": "框架由执行、评价和自我反思组成。反馈被转成自然语言，加入情景记忆，供后续尝试使用。模型权重保持不变。因此这里的“学习”体现为下一轮上下文里的经验变化。"
+          },
+          {
+            "title": "便签要能指导下一次行动",
+            "label": "编辑例子 · 非原文实验",
+            "text": "想象一个日期解析工具：第一次只处理了正常输入，空字符串导致测试失败。“我不够仔细”几乎不能指导修复；“解析前检查空输入，并确认接口约定”才是可执行的方向。但这个解释是否正确，仍要靠测试验证。"
+          },
+          {
+            "title": "为什么不只保留完整轨迹？",
+            "label": "编辑解读",
+            "text": "轨迹像录像，反思像复盘便签。前者保留细节，后者尝试提炼行动线索。压缩能节省阅读成本，却也可能删掉失败发生的条件。做研究时可以把原始反馈、归因和建议分开保存，便于追溯。"
+          },
+          {
+            "title": "证据支持什么，不支持什么？",
+            "label": "原文报告 · §4.3",
+            "text": "论文报告 HumanEval 上 91% pass@1，并与 80% 的 GPT-4 结果比较。这里的系统包含自生成测试和迭代过程；不能把这个数字理解成一次未经检查的生成，也不能当作今日模型排行。"
+          },
+          {
+            "title": "别把一次失败写成永久规则",
+            "label": "原文局限 + 编辑建议",
+            "text": "反思依赖评价信号和模型归因，无法保证正确。如果工具暂时超时，被归因为“此工具无用”，记忆反而会拖累后续决策。建议在自己的任务上比较纯重试、带反思重试，并固定总调用预算。"
+          },
+          {
+            "title": "与你的研究有什么关系？",
+            "label": "编辑建议",
+            "text": "如果你在做长期 Agent，先测经验能否改善相同任务，再测能否迁移到不同任务。两者需要不同实验。讨论时可以带来一条失败轨迹，大家分别提出归因，再用新的案例检验。"
+          }
+        ],
+        "example": {
+          "title": "把空泛自责变成可验证假设",
+          "before": "失败 → “下次更仔细” → 再次失败",
+          "after": "空输入失败 → 检查接口约定 → 添加边界处理 → 测试"
+        },
+        "evidence": [
+          {
+            "label": "HumanEval",
+            "value": "91%",
+            "context": "原文报告的 Reflexion pass@1"
+          },
+          {
+            "label": "比较对象",
+            "value": "80%",
+            "context": "论文中列出的 GPT-4 结果；须核对实验预算"
+          }
+        ],
+        "related": [
+          "2210.03629",
+          "2310.08560"
+        ]
+      }
+    },
+    {
+      "id": "2310.08560",
+      "name": "MemGPT",
+      "title": "MemGPT: Towards LLMs as Operating Systems",
+      "authors": [
+        "Charles Packer",
+        "Sarah Wooders",
+        "Kevin Lin",
+        "Vivian Fang",
+        "Shishir G. Patil",
+        "Ion Stoica",
+        "Joseph E. Gonzalez"
+      ],
+      "date": "2023-10-12",
+      "kind": "论文",
+      "topic": "Agent Memory",
+      "tags": [
+        "Long Context",
+        "Memory Management"
+      ],
+      "summary": "借用操作系统的分层内存思想，让有限上下文里的模型管理长期信息。重点是“何时取用”，而不只是“存多少”。",
+      "problem": "长文档与跨会话对话往往超出模型上下文容量。全部历史无法一直放在当前输入中。",
+      "method": "通过虚拟上下文管理调度不同层级的记忆，并利用中断控制模型与用户之间的执行流程。",
+      "result": "研究在文档分析和多轮、跨会话对话中评估了这套记忆管理方案。",
+      "limitation": "关注检索与记忆调度的额外开销；扩大可访问的记忆不等于模型总能取对信息。",
+      "steps": [
+        "当前上下文",
+        "记忆调度",
+        "外部存储",
+        "检索 → 对话"
+      ],
+      "sourceUrl": "https://arxiv.org/html/2310.08560v2",
+      "projectUrl": "https://research.memgpt.ai/",
+      "poster": {
+        "title": "有限的书桌，如何使用一整个档案室？",
+        "hook": "长对话的问题不只是“存不下”。即使历史都在档案室里，当前回答也只能使用眼前的一小部分。MemGPT 把注意力从记忆容量转向记忆调度。",
+        "status": "curated",
+        "sourceUrl": "https://arxiv.org/html/2310.08560v2",
+        "version": "editorial-1",
+        "flow": [
+          "当前上下文",
+          "模型调用记忆工具",
+          "外部层级存储",
+          "相关信息换入"
+        ],
+        "sections": [
+          {
+            "title": "操作系统给了什么启发？",
+            "label": "原文方法 · §2",
+            "text": "MemGPT 借用虚拟内存和分层存储的思路，让模型通过函数操作不同记忆层级；中断和控制流帮助管理上下文。外部可访问的信息多于当前上下文能容纳的信息。"
+          },
+          {
+            "title": "书桌和档案室",
+            "label": "编辑类比 · 非原文实验",
+            "text": "把上下文想成书桌，外部记忆想成档案室。扩大档案室不会自动让桌上出现正确文件；调度者必须决定什么值得留下、何时去找、取哪一份。模型能访问的历史与实际用于回答的历史，是两件不同的事。"
+          },
+          {
+            "title": "一次跨会话回忆",
+            "label": "编辑例子",
+            "text": "假设上周你说“我不吃花生”，本周问晚餐建议。简单地截断历史可能丢失这条信息；分层记忆可以存下偏好，在相关提问时换入。若偏好后来改变，还要处理更新与冲突，不能只不断追加。"
+          },
+          {
+            "title": "论文怎样检验这个想法？",
+            "label": "原文实验 · §3",
+            "text": "作者评估跨会话对话和文档分析，包括一致性、记忆检索与文档问答。读实验时需检查信息所在位置、可用上下文和检索设置；“虚拟上下文”没有消除模型本身的窗口限制。"
+          },
+          {
+            "title": "调度也是成本",
+            "label": "编辑解读",
+            "text": "去档案室取资料需要时间，取错资料还会干扰判断。对你的应用，可以记录每次检索是否有用、额外工具调用数和回答延迟。把“记住了”与“在需要时用对了”分别计分，会得到更具体的改进方向。"
+          },
+          {
+            "title": "和 Reflexion 一起读",
+            "label": "编辑建议",
+            "text": "Reflexion 更关注经验如何生成，MemGPT 更关注信息如何安排。可以把它们放在同一个系统图里，但不要因为都有 memory 就认为机制相同。先定义记忆写入、更新、检索和淘汰的责任边界。"
+          }
+        ],
+        "example": {
+          "title": "记忆质量取决于能否及时取用",
+          "before": "对话全量保存 → 当前窗口截断 → 关键偏好不在输入中",
+          "after": "偏好进入外部记忆 → 相关问题触发检索 → 换入当前上下文"
+        },
+        "evidence": [
+          {
+            "label": "评估场景",
+            "value": "跨会话",
+            "context": "对话一致性与记忆回忆"
+          },
+          {
+            "label": "另一场景",
+            "value": "文档分析",
+            "context": "有限上下文中的检索与问答；没有宣称无限可靠"
+          }
+        ],
+        "related": [
+          "2303.11366",
+          "2407.04620"
+        ]
+      }
+    },
+    {
+      "id": "2210.03629",
+      "name": "ReAct",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "authors": [
+        "Shunyu Yao",
+        "Jeffrey Zhao",
+        "Dian Yu",
+        "Nan Du",
+        "Izhak Shafran",
+        "Karthik Narasimhan",
+        "Yuan Cao"
+      ],
+      "date": "2022-10-06",
+      "kind": "论文",
+      "topic": "Agent Systems",
+      "tags": [
+        "Reasoning",
+        "Tool Use"
+      ],
+      "summary": "让推理与行动交替发生：先想一步，再调用工具，用观察到的结果修正接下来的计划。",
+      "problem": "单独生成推理或行动计划，难以同时处理外部信息和动态变化的任务环境。",
+      "method": "在同一轨迹中交错生成推理文本和任务动作，让环境观察参与下一步决策。",
+      "result": "论文覆盖问答、事实核验和交互决策任务，并展示了可追踪的行动轨迹。",
+      "limitation": "阅读时留意工具与环境设置，以及轨迹可读性和推理正确性之间的区别。",
+      "steps": [
+        "Thought",
+        "Action",
+        "Observation",
+        "下一轮推理"
+      ],
+      "sourceUrl": "https://arxiv.org/html/2210.03629v3",
+      "projectUrl": "https://react-lm.github.io/",
+      "poster": {
+        "title": "别一口气想完：行动之后，再看一眼世界",
+        "hook": "如果你让模型规划一次采购，它可能流畅地编出商品和价格。ReAct 提出一个更实用的节奏：想下一步，做一个动作，读到结果，再继续。",
+        "status": "curated",
+        "sourceUrl": "https://arxiv.org/html/2210.03629v3",
+        "version": "editorial-1",
+        "flow": [
+          "Thought 推理",
+          "Action 工具调用",
+          "Observation 观察",
+          "更新下一步"
+        ],
+        "sections": [
+          {
+            "title": "推理和行动怎样互相帮助？",
+            "label": "原文方法 · §2",
+            "text": "ReAct 在同一轨迹中交错产生推理与行动，环境观察参与后续决策。推理帮助调整计划，行动提供模型内部知识之外的信息。论文研究问答、事实核验和交互任务。"
+          },
+          {
+            "title": "一个查证问题的例子",
+            "label": "编辑例子 · 非原文轨迹",
+            "text": "假设问题是“这两位作者是否毕业于同一所大学”。先搜索第一位作者的可靠资料，读观察，再查第二位；若搜索结果名字相同却不是同一个人，下一步应消歧。这个过程不是先猜答案再找装饰性的链接。"
+          },
+          {
+            "title": "把工具响应当成新证据",
+            "label": "编辑解读",
+            "text": "工具说“没有找到”，也可能是查询太宽、服务失败或资料确实缺失。这三种观察要求不同下一步。设计工具接口时，把错误类型与有效结果分开，比让模型从一大段模糊文本里猜更容易评估。"
+          },
+          {
+            "title": "成功率要带上实验条件",
+            "label": "原文报告 · §4",
+            "text": "作者在 ALFWorld 和 WebShop 中报告相对所比较方法的绝对成功率提升分别为 34 和 10 个百分点，使用少量上下文示例。这些结果属于论文的任务、基线与设置，不是任何工具 Agent 的通用增益。"
+          },
+          {
+            "title": "可读的轨迹，不等于正确的轨迹",
+            "label": "原文失败例子 + 编辑解读",
+            "text": "项目页也展示失败案例。观察写进上下文，不保证模型一定正确使用；思考写得流畅，也不能替代任务验证。建议把工具失败、证据不足和最终答案错误分别记录。"
+          },
+          {
+            "title": "怎样用于自己的研究？",
+            "label": "编辑建议",
+            "text": "拿一个任务，对照“直接回答”“只行动”“推理与行动交替”。固定工具权限和调用预算，再看成功率、成本与错误分布。后续可以用 Reflexion 在跨尝试之间加经验，形成两个不同时间尺度的循环。"
+          }
+        ],
+        "example": {
+          "title": "观察改变计划，而不只是附在答案后面",
+          "before": "完整计划 → 执行到底 → 最后才发现前提错误",
+          "after": "查第一条资料 → 检查身份 → 修正查询 → 查第二条资料"
+        },
+        "evidence": [
+          {
+            "label": "ALFWorld",
+            "value": "+34 pp",
+            "context": "原文对指定比较方法的绝对成功率提升"
+          },
+          {
+            "label": "WebShop",
+            "value": "+10 pp",
+            "context": "同属论文实验条件；pp 表示百分点"
+          }
+        ],
+        "related": [
+          "2303.11366",
+          "2310.06770"
+        ]
+      }
+    },
+    {
+      "id": "2305.16291",
+      "name": "Voyager",
+      "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+      "authors": [
+        "Guanzhi Wang",
+        "Yuqi Xie",
+        "Yunfan Jiang",
+        "Ajay Mandlekar",
+        "Chaowei Xiao",
+        "Yuke Zhu",
+        "Linxi Fan",
+        "Anima Anandkumar"
+      ],
+      "date": "2023-05-25",
+      "kind": "论文",
+      "topic": "Agent Systems",
+      "tags": [
+        "Lifelong Learning",
+        "Skill Library"
+      ],
+      "summary": "把探索中学到的技能保存为可执行代码。Voyager 在 Minecraft 中积累、检索并组合这些技能。",
+      "problem": "开放环境没有固定的任务终点，Agent 需要不断发现目标，并复用已有能力。",
+      "method": "结合自动课程、可增长的技能代码库和基于环境反馈的迭代提示，使用 GPT-4 生成与改进程序。",
+      "result": "论文报告了 Minecraft 中探索、技能积累及在新世界中复用技能的结果。",
+      "limitation": "将 Minecraft 内的迁移与跨领域泛化分开看，技能库还依赖执行环境和代码接口。",
+      "steps": [
+        "自动课程",
+        "生成代码",
+        "环境反馈",
+        "技能库"
+      ],
+      "sourceUrl": "https://arxiv.org/abs/2305.16291",
+      "projectUrl": "https://voyager.minedojo.org/",
+      "poster": null
+    },
+    {
+      "id": "2407.04620",
+      "name": "TTT Layers",
+      "title": "Learning to (Learn at Test Time): RNNs with Expressive Hidden States",
+      "authors": [
+        "Yu Sun",
+        "Xinhao Li",
+        "Karan Dalal",
+        "Jiarui Xu",
+        "Arjun Vikram",
+        "Genghan Zhang",
+        "Yann Dubois",
+        "Xinlei Chen",
+        "Xiaolong Wang",
+        "Sanmi Koyejo",
+        "Tatsunori Hashimoto",
+        "Carlos Guestrin"
+      ],
+      "date": "2024-07-05",
+      "kind": "论文",
+      "topic": "Test-Time Learning",
+      "tags": [
+        "Sequence Modeling",
+        "Long Context"
+      ],
+      "summary": "如果 RNN 的隐藏状态本身就是一个小模型呢？TTT 用测试序列上的自监督学习来更新它。",
+      "problem": "注意力的长序列开销较大，而传统 RNN 的固定隐藏状态表达能力有限。",
+      "method": "把隐藏状态设为可学习模型，把状态更新写成自监督学习步骤，提出 TTT-Linear 和 TTT-MLP。",
+      "result": "论文在 125M 至 1.3B 参数规模进行比较；TTT 层能从更长上下文继续获益。",
+      "limitation": "TTT-MLP 存在内存 I/O 挑战；不要把隐藏状态更新等同于任意大模型的在线微调。",
+      "steps": [
+        "输入序列",
+        "自监督目标",
+        "更新隐藏模型",
+        "预测"
+      ],
+      "sourceUrl": "https://arxiv.org/abs/2407.04620",
+      "projectUrl": null,
+      "poster": null
+    },
+    {
+      "id": "2310.06770",
+      "name": "SWE-bench",
+      "title": "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?",
+      "authors": [
+        "Carlos E. Jimenez",
+        "John Yang",
+        "Alexander Wettig",
+        "Shunyu Yao",
+        "Kexin Pei",
+        "Ofir Press",
+        "Karthik Narasimhan"
+      ],
+      "date": "2023-10-10",
+      "kind": "论文",
+      "topic": "Agent Systems",
+      "tags": [
+        "Evaluation",
+        "Code Agents"
+      ],
+      "summary": "从生成一段代码，到修复一个真实仓库的问题。SWE-bench 把 GitHub issue 与对应修复连接成评估任务。",
+      "problem": "短代码生成测试难以覆盖理解仓库、跨文件修改和执行验证这些软件工程环节。",
+      "method": "从 12 个 Python 仓库整理 2,294 个 issue 与对应 pull request，要求模型修改代码库以解决问题。",
+      "result": "原论文展示了当时模型在真实软件问题上的局限，为后续研究提供可执行的评估框架。",
+      "limitation": "原论文结果不是当前排行榜。比较系统时需要核对数据版本、工具权限和计算预算。",
+      "steps": [
+        "GitHub issue",
+        "定位代码",
+        "生成补丁",
+        "测试验证"
+      ],
+      "sourceUrl": "https://arxiv.org/abs/2310.06770",
+      "projectUrl": "https://www.swebench.com/",
+      "poster": null
+    },
+    {
+      "id": "2405.04434",
+      "name": "DeepSeek-V2",
+      "title": "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model",
+      "authors": [
+        "DeepSeek-AI"
+      ],
+      "date": "2024-05-07",
+      "kind": "技术报告",
+      "topic": "Efficient Models",
+      "tags": [
+        "MoE",
+        "Model Architecture"
+      ],
+      "summary": "将 MLA 与稀疏专家架构结合，关注大模型训练成本和推理效率之间的取舍。",
+      "problem": "更大模型带来训练与推理成本，参数规模和实际激活计算量并不是同一件事。",
+      "method": "采用 Multi-head Latent Attention 和 DeepSeekMoE；总参数量 236B，每个 token 激活 21B。",
+      "result": "模型支持 128K 上下文，论文将效率与模型能力一起报告。",
+      "limitation": "参数激活量不能直接推导实际延迟，还要考虑硬件、并行策略与服务负载。",
+      "steps": [
+        "输入 token",
+        "MLA",
+        "稀疏专家",
+        "输出"
+      ],
+      "sourceUrl": "https://arxiv.org/abs/2405.04434",
+      "projectUrl": null,
+      "poster": null
+    },
+    {
+      "id": "2301.04104",
+      "name": "DreamerV3",
+      "title": "Mastering Diverse Domains through World Models",
+      "authors": [
+        "Danijar Hafner",
+        "Jurgis Pasukonis",
+        "Jimmy Ba",
+        "Timothy Lillicrap"
+      ],
+      "date": "2023-01-10",
+      "kind": "论文",
+      "topic": "World Models",
+      "tags": [
+        "Reinforcement Learning",
+        "Planning"
+      ],
+      "summary": "先学习环境如何变化，再在想象出的未来中改进行为。DreamerV3 研究同一套配置跨任务学习。",
+      "problem": "强化学习方法迁移到新领域，往往需要大量手工调整与试验。",
+      "method": "学习环境模型，在模型想象的轨迹上优化行为，并通过归一化等机制改善跨领域学习稳定性。",
+      "result": "论文在 150 多个任务上使用同一配置，并报告了 Minecraft 中从零收集钻石的结果。",
+      "limitation": "世界模型误差会影响规划。阅读时应区分模型内想象与真实环境中的表现。",
+      "steps": [
+        "环境观察",
+        "学习世界模型",
+        "想象轨迹",
+        "改进行为"
+      ],
+      "sourceUrl": "https://arxiv.org/abs/2301.04104",
+      "projectUrl": "https://danijar.com/project/dreamerv3/",
+      "poster": null
+    },
+    {
+      "id": "anthropic-agents",
+      "name": "Building effective agents",
+      "title": "Building effective agents：什么时候需要 Agent？",
+      "authors": [
+        "Anthropic"
+      ],
+      "date": "2024-12-19",
+      "kind": "研究博客",
+      "topic": "Agent Systems",
+      "tags": [
+        "Workflow",
+        "Architecture"
+      ],
+      "summary": "流程明确，就先用工作流；步骤需要由模型动态决定，再考虑 Agent。这篇工程文章帮助你判断复杂度是否值得。",
+      "problem": "所有任务都交给自主 Agent，会不会付出不必要的成本？",
+      "method": "区分预定义工作流和模型动态决策，介绍提示链、路由、并行、协调者与评估迭代等模式。",
+      "result": "这是基于工程经验的设计建议，不是统一实验条件下的性能排行榜。",
+      "limitation": "文章发布于 2024 年；工具生态已经变化，架构原则需要结合任务验证。",
+      "steps": [
+        "任务边界",
+        "选择模式",
+        "工具接口",
+        "评估迭代"
+      ],
+      "sourceUrl": "https://www.anthropic.com/engineering/building-effective-agents",
+      "projectUrl": null,
+      "poster": null
+    },
+    {
+      "id": "openai-o1",
+      "name": "Learning to reason",
+      "title": "Learning to reason with LLMs：把计算花在回答之前",
+      "authors": [
+        "OpenAI"
+      ],
+      "date": "2024-09-12",
+      "kind": "研究博客",
+      "topic": "Test-Time Learning",
+      "tags": [
+        "Reasoning",
+        "Inference Compute"
+      ],
+      "summary": "训练时学会推理策略，回答时投入更多计算。o1 的研究发布让“推理预算”成为观察模型能力的一个维度。",
+      "problem": "模型能否通过更充分的推理处理困难问题？",
+      "method": "官方介绍用强化学习改进推理策略，并研究训练计算与测试时计算的影响。",
+      "result": "官方报告数学、编程及科学问答等评估；不同采样和选择预算对应不同结果。",
+      "limitation": "测试时增加计算不等于测试时更新权重；也不等于 TTT 层。不要跨预算比较分数。",
+      "steps": [
+        "问题",
+        "推理计算",
+        "检查策略",
+        "答案"
+      ],
+      "sourceUrl": "https://openai.com/index/learning-to-reason-with-llms/",
+      "projectUrl": null,
+      "poster": null
+    },
+    {
+      "id": "openai-deep-research",
+      "name": "Deep research",
+      "title": "Deep research：从搜索结果到可追溯的研究报告",
+      "authors": [
+        "OpenAI"
+      ],
+      "date": "2025-02-02",
+      "kind": "项目发布",
+      "topic": "Agent Systems",
+      "tags": [
+        "Research Agents",
+        "Web Browsing"
+      ],
+      "summary": "一个复杂问题，需要多轮搜索、阅读和综合。Deep research 的发布展示了长程研究 Agent 的产品形态。",
+      "problem": "搜索到资料以后，谁来判断下一步要查什么？",
+      "method": "发布文章介绍结合网页浏览、数据分析和多步推理，随发现的信息调整研究路径。",
+      "result": "系统生成包含引用的报告；这是产品发布与官方评估，不能当作所有任务的独立验证。",
+      "limitation": "可能出现事实错误或来源判断失误。这里解读最初发布，不代表当前套餐与可用能力。",
+      "steps": [
+        "研究问题",
+        "搜索阅读",
+        "调整路径",
+        "引用报告"
+      ],
+      "sourceUrl": "https://openai.com/index/introducing-deep-research/",
+      "projectUrl": null,
+      "poster": null
+    },
+    {
+      "id": "gemini-robotics",
+      "name": "Gemini Robotics",
+      "title": "Gemini Robotics：语言模型开始输出物理动作",
+      "authors": [
+        "Carolina Parada"
+      ],
+      "date": "2025-03-12",
+      "kind": "项目发布",
+      "topic": "World Models",
+      "tags": [
+        "Robotics",
+        "VLA"
+      ],
+      "summary": "理解一句指令，还要把它变成机器人动作。Gemini Robotics 将视觉、语言与动作连接起来。",
+      "problem": "数字世界里的理解能力，怎样进入不断变化的物理环境？",
+      "method": "官方介绍基于 Gemini 2.0 的视觉语言动作模型，以及侧重空间理解的 Robotics-ER。",
+      "result": "发布材料展示泛化、交互与灵巧操作的实验和示例；需要结合技术报告查看条件。",
+      "limitation": "演示成功不等于任意机器人、任意环境都能可靠工作。物理执行仍需独立验证。",
+      "steps": [
+        "视觉与指令",
+        "空间理解",
+        "动作生成",
+        "环境反馈"
+      ],
+      "sourceUrl": "https://deepmind.google/blog/gemini-robotics-brings-ai-into-the-physical-world/",
+      "projectUrl": null,
+      "poster": null
+    }
+  ]
+}

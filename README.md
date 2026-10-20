@@ -1,5 +1,11 @@
 # PaperFeed · Research, made easier
 
+## PaperPop 原生 App · 2026-10-20
+
+新增 SwiftUI iOS 工程与独立的 Node.js/SQLite 讨论服务，入口见 [iOS 运行说明](ios/README.md)。支持论文发现、结构化 Poster、账号、共享论文讨论、研究方向社区、站内通知、收藏和私人笔记同步。此原生后台与现有 Sites Demo 的身份及数据库独立，尚未迁移 Web 数据。
+
+当前已配置 Xcode 26.3 与 iOS 26.3.1 运行时，PaperPop 已在 iPhone 16 Pro 模拟器完成实际编译、安装与运行。已验证 Poster、收藏与笔记重启保留、社区切换、登录同步及钥匙串会话恢复。双击 `ios/Run iPhone Simulator.command` 可再次启动。真机和 TestFlight 尚未验证。下面保留现有 Web Demo 的说明。
+
 PaperFeed 是一个以兴趣驱动的研究内容社区：发现研究 → 轻松理解 → 表达兴趣 → 参与讨论 → 连接同行 → 沉淀知识。
 
 当前 v0.3 面向投资人连续演示，含 12 条真实研究内容、3 篇深入图文和 3 条可播放的配音分镜。按用户要求发布至当前账户 wanglinhao4140 的新 Sites；原 lij850601 站点保留。新站地址：https://paperfeed-research-demo.wanglinhao4140.chatgpt.site 。Sites 已返回部署成功；当前为账户所有者私有访问，需要 ChatGPT 登录。已在该线上站点走通兴趣、配音讲解、深读、笔记、社区共读、评论回复、同行关注、个人空间及真实文件导出。生产 D1 API 与 26 个页面入口检查通过。

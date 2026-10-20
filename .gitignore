@@ -38,3 +38,11 @@ next-env.d.ts
 /work/
 
 *.tsbuildinfo
+
+# native app and local API
+/ios/.build/
+/ios/build/
+/ios/DerivedData/
+/server/.data/
+*.xcuserstate
+xcuserdata/
