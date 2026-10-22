@@ -21,7 +21,9 @@
     "ios:setup": "python3 scripts/ios-simulator.py --setup-only",
     "ios:simulator": "python3 scripts/ios-simulator.py",
     "local:init": "node server/init.mjs",
-    "local:test": "node --test server/tests/*.test.mjs"
+    "local:test": "node --test server/tests/*.test.mjs",
+    "local:collect": "node server/collect.mjs",
+    "local:scheduler": "node server/scheduler.mjs"
   },
   "dependencies": {
     "react": "19.2.6",

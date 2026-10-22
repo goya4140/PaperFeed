@@ -1,0 +1,26 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { fixture } from './helpers.mjs';
+test('arXiv paging, failure resume, deduplication, immutable versions and stable associations',async t=>{
+ const f=await fixture(t);process.env.PAPERPOP_DATA_DIR=f.dir;
+ const {db}=await import('../database.mjs');t.after(()=>db.close());
+ const {createCollection,collect,parseFeed}=await import('../modules/collection.mjs');
+ const xml=(ids,total=ids.length)=>`<feed xmlns="http://www.w3.org/2005/Atom" xmlns:o="http://a9.com/-/spec/opensearch/1.1/"><o:totalResults>${total}</o:totalResults>${ids.map(([id,v])=>`<entry><id>http://arxiv.org/abs/${id}v${v}</id><title>Paper ${id} v${v}</title><summary>Abstract only</summary><published>2025-01-01T00:00:00Z</published><updated>2025-01-0${v}T00:00:00Z</updated><author><name>Fixture</name></author><category term="cs.AI"/></entry>`).join('')}</feed>`;
+ assert.throws(()=>parseFeed('<!DOCTYPE feed><feed/>'));
+ const source={id:'fixture-ai',topic:'Agent Systems',category:'cs.AI',pageSize:1};
+ const run=createCollection(source,{from:'2025-01-01',until:'2025-01-03'});
+ await collect(run,{maxPages:1,fetchPage:async()=>xml([['2501.00001',1]],2)});
+ assert.equal(db.prepare('SELECT nextStart FROM collection_runs WHERE id=?').get(run).nextStart,1);
+ await assert.rejects(collect(run,{maxPages:1,fetchPage:async()=>{throw new Error('fixture outage');}}),/fixture outage/);
+ assert.equal(db.prepare('SELECT nextStart FROM collection_runs WHERE id=?').get(run).nextStart,1);
+ await collect(run,{fetchPage:async url=>{assert.equal(url.searchParams.get('start'),'1');return xml([['2501.00002',1]],2);}});
+ const a=await f.call('/v1/auth/register',{method:'POST',data:{name:'collector-user',password:'synthetic-password'}});
+ await f.call('/v1/library',{method:'POST',token:a.token,data:{changes:[{id:randomUUID(),field:'saved',key:'2501.00001',value:'true'}]}});
+ const post=await f.call('/v1/posts',{method:'POST',token:a.token,data:{id:randomUUID(),title:'Version association',body:'Keep stable ID',kind:'讨论',topic:source.topic,paperId:'2501.00001'}});
+ for(const version of [2,2,1])await collect(createCollection(source,{idList:'2501.00001'}),{fetchPage:async()=>xml([['2501.00001',version]])});
+ assert.equal((await f.call('/v1/papers/2501.00001')).paperVersion,2);
+ assert.equal(db.prepare("SELECT count(*) n FROM paper_versions WHERE paperId='2501.00001'").get().n,2);
+ assert((await f.call('/v1/library',{token:a.token})).saved.includes('2501.00001'));
+ assert.equal((await f.call('/v1/posts/'+post.id)).post.paperId,'2501.00001');
+});

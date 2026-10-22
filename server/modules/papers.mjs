@@ -27,10 +27,11 @@ export function upsertPaper(input,{source='manual',sourceId=input.id,version=1}=
   const data={...metadata,name:input.name||input.title,kind:input.kind||'论文',tags:input.tags||[],date:published.slice(0,10)};
   return transaction(()=>{
     const old=db.prepare('SELECT * FROM papers WHERE id=?').get(input.id);
-    if(old&&(old.source!==source||old.sourceId!==sourceId))invalid('论文来源与既有 ID 冲突');
+    if(old&&!(old.source==='seed'&&source==='arxiv')&&(old.source!==source||old.sourceId!==sourceId))invalid('论文来源与既有 ID 冲突');
     if(old&&version<old.latestVersion)return {id:input.id,changed:false,reason:'older-version'};
+    if(old&&source==='arxiv'&&old.source==='arxiv'&&version===old.latestVersion)return {id:input.id,changed:false,reason:'same-version'};
     const same=db.prepare('SELECT 1 FROM paper_versions WHERE paperId=? AND version=?').get(input.id,version);
-    db.prepare(`INSERT INTO papers VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET topic=excluded.topic,latestVersion=excluded.latestVersion,publishedAt=excluded.publishedAt,updatedAt=excluded.updatedAt,data=excluded.data`).run(input.id,input.topic,source,sourceId,version,new Date(published).toISOString(),new Date(updated).toISOString(),now,'public',0,JSON.stringify(data));
+    db.prepare(`INSERT INTO papers VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET source=excluded.source,sourceId=excluded.sourceId,topic=excluded.topic,latestVersion=excluded.latestVersion,publishedAt=excluded.publishedAt,updatedAt=excluded.updatedAt,data=excluded.data`).run(input.id,input.topic,source,sourceId,version,new Date(published).toISOString(),new Date(updated).toISOString(),now,'public',0,JSON.stringify(data));
     // Immutable source snapshots; editorial changes live on papers, never erase an old version.
     if(!same)db.prepare('INSERT INTO paper_versions VALUES(?,?,?,?,?)').run(input.id,version,updated,now,JSON.stringify(data));
     return {id:input.id,changed:!same,version};

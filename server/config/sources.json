@@ -1,0 +1,4 @@
+[
+  {"id":"arxiv-ai","category":"cs.AI","topic":"Agent Systems","pageSize":10,"maxPages":2,"enabled":true,"everyHours":24},
+  {"id":"arxiv-cl","category":"cs.CL","topic":"Agent Memory","pageSize":10,"maxPages":2,"enabled":false,"everyHours":24}
+]
