@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { seedContent } from './seed.mjs';
 import { config,root } from './config.mjs';
 mkdirSync(config.dataDir,{recursive:true,mode:0o700});
 export const db=new DatabaseSync(path.join(config.dataDir,'paperpop.sqlite'));
@@ -20,3 +21,5 @@ export function migrate() {
   }
 }
 migrate();
+// Imported content is a one-time migration, never an overwrite on restart.
+seedContent(db,transaction);

@@ -8,12 +8,14 @@ struct PaperView: View {
     @State private var report = false
     @State private var mode = "Poster"
     private var sections: [PosterSection] {
-        paper.poster?.sections ?? [
+        paper.poster?.sections ?? (paper.isAbstractOnly ? [
+            PosterSection(title: "论文摘要", label: "原始摘要 · 尚未生成详细解读", text: paper.summary)
+        ] : [
             PosterSection(title: "研究问题", label: "基础速读 · 待逐条补充原文定位", text: paper.problem),
             PosterSection(title: "核心方法", label: "基础速读 · 编辑整理", text: paper.method),
             PosterSection(title: "主要结果", label: "基础速读 · 请结合原文实验条件", text: paper.result),
             PosterSection(title: "条件与局限", label: "阅读提示", text: paper.limitation)
-        ]
+        ].filter { !$0.text.isEmpty })
     }
     var body: some View {
         VStack(spacing: 0) {
@@ -27,14 +29,14 @@ struct PaperView: View {
                         LazyVStack(alignment: .leading, spacing: 18) {
                             header
                             HStack {
-                                Label(paper.poster == nil ? "基础速读 · 完整 Poster 待制作" : "精选图解 · 编辑整理", systemImage: "checkmark.seal")
+                                Label(paper.isAbstractOnly ? "论文摘要 · 详细解读待发布" : paper.poster == nil ? "基础速读 · 完整 Poster 待制作" : "精选图解 · 编辑整理", systemImage: "checkmark.seal")
                                     .font(.system(size: 10)).foregroundStyle(.secondary)
                             }
                             if let hook = paper.poster?.hook {
                                 DisclosureGroup { Text(hook).font(.system(size: 13)).foregroundStyle(.secondary).lineSpacing(5).padding(.top, 12) }
                                     label: { Label("从一个例子开始", systemImage: "lightbulb").font(.system(size: 12, weight: .medium)) }.popCard()
                             }
-                            Button { diagram = true } label: { flowCard }.buttonStyle(.plain)
+                            if !(paper.poster?.flow ?? paper.steps).isEmpty { Button { diagram = true } label: { flowCard }.buttonStyle(.plain) }
                             if let evidence = paper.poster?.evidence {
                                 VStack(alignment: .leading, spacing: 15) {
                                     PopSectionHeading(title: "关键证据", detail: "原文实验 · 请结合条件")
@@ -125,7 +127,7 @@ struct PaperView: View {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(paper.name).font(.system(size: 36, weight: .bold, design: .serif)).tracking(-1.2)
-                    Text(paper.poster?.title ?? "一个想法，快速读懂。").font(.system(size: 20, weight: .semibold)).lineSpacing(4).fixedSize(horizontal: false, vertical: true)
+                    Text(paper.poster?.title ?? (paper.isAbstractOnly ? "从摘要开始，回到原文。" : "一个想法，快速读懂。")).font(.system(size: 20, weight: .semibold)).lineSpacing(4).fixedSize(horizontal: false, vertical: true)
                 }.frame(maxWidth: .infinity, alignment: .leading)
                 ResearchArtwork(topic: paper.topic).frame(width: 73, height: 100)
             }

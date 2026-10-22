@@ -1,0 +1,26 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { fixture } from './helpers.mjs';
+test('live content import, stable versions, linked library and community survive restart',async t=>{
+ const f=await fixture(t);
+ const a=await f.call('/v1/auth/register',{method:'POST',data:{name:'content-user',password:'synthetic-password'}});
+ const paper={id:'manual-2026',title:'Live abstract-only paper',summary:'An abstract, without invented experiments.',authors:['Local editor'],date:'2026-10-22',topic:'Agent Memory',sourceUrl:'https://arxiv.org/abs/2303.11366'};
+ const file=f.dir+'/paper.json';
+ const insert=()=>{writeFileSync(file,JSON.stringify(paper));const r=spawnSync(process.execPath,['server/content.mjs','import',file],{env:f.env,encoding:'utf8'});assert.equal(r.status,0,r.stderr);};
+ insert();
+ let catalog=await f.call('/v1/catalog');assert(catalog.papers.some(p=>p.id===paper.id&&p.poster===null));
+ const loaded=await f.call('/v1/papers/'+paper.id);assert.equal(loaded.method,undefined);
+ await f.call('/v1/library',{method:'POST',token:a.token,data:{changes:[{id:randomUUID(),field:'saved',key:paper.id,value:'true'}]}});
+ const post={id:randomUUID(),title:'New paper discussion',body:'Works without restart',kind:'问题',topic:paper.topic,paperId:paper.id};
+ await f.call('/v1/posts',{method:'POST',token:a.token,data:post});
+ paper.paperVersion=2;paper.title='Updated paper';insert();insert();
+ assert.equal((await f.call('/v1/papers/'+paper.id)).paperVersion,2);
+ assert.equal((await f.call('/v1/catalog')).papers.filter(p=>p.id===paper.id).length,1);
+ await f.restart();
+ assert((await f.call('/v1/library',{token:a.token})).saved.includes(paper.id));
+ assert.equal((await f.call('/v1/posts?paperId='+paper.id)).length,1);
+ assert.equal((await f.call('/v1/papers/'+paper.id)).title,'Updated paper');
+});

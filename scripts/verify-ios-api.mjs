@@ -22,7 +22,7 @@ async function call(route,{method='GET',data,token,status=200}={}) {
 }
 try {
   await start();
-  assert.equal((await call('/v1/catalog')).papers.length,12);
+  assert.ok((await call('/v1/catalog')).papers.some(p=>p.id==='2303.11366'));
   await call('/v1/library',{status:401});
   const alice=await call('/v1/auth/register',{method:'POST',data:{name:'alice',password:'test-pass-123'}});
   const bob=await call('/v1/auth/register',{method:'POST',data:{name:'bob',password:'test-pass-456'}});

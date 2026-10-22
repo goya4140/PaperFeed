@@ -1,5 +1,5 @@
 import { db } from '../database.mjs';
-import { catalog, topics, papers } from './papers.mjs';
+import { topics, papers } from './papers.mjs';
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import { hash, now, fail, text, identifier, authenticate, session, transaction, visible, post, library, body, limit } from './shared.mjs';
 

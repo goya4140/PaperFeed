@@ -30,6 +30,30 @@ public struct Paper: Codable, Identifiable, Hashable, Sendable {
     public var sourceUrl: String
     public var projectUrl: String?
     public var poster: Poster?
+    public var isAbstractOnly: Bool { poster == nil && method.isEmpty && result.isEmpty }
+    private enum CodingKeys: String, CodingKey {
+        case id, name, title, authors, date, kind, topic, tags, summary, problem, method, result, limitation, steps, sourceUrl, projectUrl, poster
+    }
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? title
+        authors = try c.decodeIfPresent([String].self, forKey: .authors) ?? []
+        date = try c.decode(String.self, forKey: .date)
+        kind = try c.decodeIfPresent(String.self, forKey: .kind) ?? "论文"
+        topic = try c.decode(String.self, forKey: .topic)
+        tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        summary = try c.decodeIfPresent(String.self, forKey: .summary) ?? ""
+        problem = try c.decodeIfPresent(String.self, forKey: .problem) ?? ""
+        method = try c.decodeIfPresent(String.self, forKey: .method) ?? ""
+        result = try c.decodeIfPresent(String.self, forKey: .result) ?? ""
+        limitation = try c.decodeIfPresent(String.self, forKey: .limitation) ?? ""
+        steps = try c.decodeIfPresent([String].self, forKey: .steps) ?? []
+        sourceUrl = try c.decode(String.self, forKey: .sourceUrl)
+        projectUrl = try c.decodeIfPresent(String.self, forKey: .projectUrl)
+        poster = try c.decodeIfPresent(Poster.self, forKey: .poster)
+    }
     public var source: URL? { URL(string: sourceUrl) }
     public func matches(_ query: String) -> Bool {
         query.isEmpty || ([name, title, summary, topic] + authors + tags).joined(separator: " ").localizedCaseInsensitiveContains(query)

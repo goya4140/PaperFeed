@@ -21,6 +21,9 @@ try {
     server.stdout.on('data',data=>{const match=data.toString().match(/http:\/\/127\.0\.0\.1:\d+/);if(match){clearTimeout(timer);resolve(match[0]);}});
     server.once('exit',()=>{clearTimeout(timer);reject(new Error('API stopped'));});
   });
+  const paperFile=path.join(directory,'new-paper.json');
+  await writeFile(paperFile,JSON.stringify({id:'native-new-paper',title:'Isolated integration paper',summary:'Abstract only; synthetic test fixture.',authors:['Test fixture'],date:'2026-10-22',topic:'Agent Memory',sourceUrl:'https://arxiv.org/abs/2303.11366'}));
+  await run(process.execPath,['server/content.mjs','import',paperFile],{PAPERPOP_DATA_DIR:path.join(directory,'data')});
   await run(path.join(app,'Contents/MacOS/Verify'),[],{PAPERPOP_VERIFY_API:base});
 } finally {
   if(server && server.exitCode === null) await new Promise(resolve=>{server.once('exit',resolve);server.kill('SIGTERM');});

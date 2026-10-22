@@ -11,6 +11,9 @@ enum StoreVerification {
         try store.configure(address)
         await store.refresh()
         precondition(store.connected)
+        guard let fresh = store.catalog.papers.first(where: { $0.id == "native-new-paper" }) else { fatalError("Live imported paper not refreshed") }
+        precondition(fresh.isAbstractOnly && fresh.source != nil)
+        store.change("saved", key: fresh.id, value: "true")
         store.change("notes", key: "2303.11366", value: "离线导入笔记")
         store.change("saved", key: "2303.11366", value: "true")
         try await store.authenticate(name: name, password: "synthetic-password-123", register: true, importGuest: true)
@@ -23,6 +26,9 @@ enum StoreVerification {
         precondition(post.id == id)
         let found = try await store.posts(paperId: "2303.11366")
         precondition(found.contains { $0.id == id })
+        let freshPost = try await store.publish(id: UUID().uuidString, title: "新入库论文交流", body: "无解读论文也能收藏交流", kind: "讨论", topic: fresh.topic, paperId: fresh.id)
+        precondition(freshPost.paperId == fresh.id)
+        precondition(library.saved.contains(fresh.id))
         let replyID = UUID().uuidString
         try await store.reply(id: replyID, postId: id, parentId: nil, body: "原生客户端回复验证")
         try await store.reply(id: replyID, postId: id, parentId: nil, body: "原生客户端回复验证")
