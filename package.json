@@ -19,7 +19,9 @@
     "ios:verify:client": "node scripts/verify-ios-store.mjs",
     "ios:doctor": "python3 scripts/ios-simulator.py --diagnose",
     "ios:setup": "python3 scripts/ios-simulator.py --setup-only",
-    "ios:simulator": "python3 scripts/ios-simulator.py"
+    "ios:simulator": "python3 scripts/ios-simulator.py",
+    "local:init": "node server/init.mjs",
+    "local:test": "node --test server/tests/*.test.mjs"
   },
   "dependencies": {
     "react": "19.2.6",
