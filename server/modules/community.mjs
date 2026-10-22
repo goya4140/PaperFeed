@@ -1,7 +1,7 @@
 import { db } from '../database.mjs';
 import { topics, papers } from './papers.mjs';
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { hash, now, fail, text, identifier, authenticate, session, transaction, visible, post, library, body, limit } from './shared.mjs';
+import { randomUUID } from 'node:crypto';
+import { now, fail, text, identifier, authenticate, transaction, visible, post, body, limit } from './shared.mjs';
 
 export async function route(req,url) {
   const p=url.pathname, method=req.method;
@@ -9,7 +9,7 @@ export async function route(req,url) {
     const user=authenticate(req,false);
     const topic=url.searchParams.get('topic'), paperId=url.searchParams.get('paperId');
     const offset=Math.max(0, Math.min(100000,Number(url.searchParams.get('offset')) || 0));
-    return db.prepare(`SELECT p.*,u.name author,(SELECT COUNT(*) FROM replies r WHERE r.postId=p.id AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=r.authorId)) replies FROM posts p JOIN users u ON u.id=p.authorId WHERE (? IS NULL OR p.topic=?) AND (? IS NULL OR p.paperId=?) AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=p.authorId) ORDER BY p.createdAt DESC,p.id LIMIT 50 OFFSET ?`).all(user?.id || '',topic,topic,paperId,paperId,user?.id || '',offset);
+    return db.prepare(`SELECT p.*,u.name author,(SELECT COUNT(*) FROM replies r WHERE r.postId=p.id AND NOT EXISTS(SELECT 1 FROM content_moderation m WHERE m.targetType='reply' AND m.targetId=r.id AND m.hidden=1) AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=r.authorId)) replies FROM posts p JOIN users u ON u.id=p.authorId WHERE NOT EXISTS(SELECT 1 FROM content_moderation m WHERE m.targetType='post' AND m.targetId=p.id AND m.hidden=1) AND (? IS NULL OR p.topic=?) AND (? IS NULL OR p.paperId=?) AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=p.authorId) ORDER BY p.createdAt DESC,p.id LIMIT 50 OFFSET ?`).all(user?.id || '',topic,topic,paperId,paperId,user?.id || '',offset);
   }
   if(p === '/v1/posts' && method === 'POST') {
     const user=authenticate(req); limit(req,'publish',30);
@@ -25,7 +25,7 @@ export async function route(req,url) {
   const match=p.match(/^\/v1\/posts\/([a-zA-Z0-9-]+)(\/replies)?$/);
   if(match) {
     const user=authenticate(req,method !== 'GET'); const parent=post(match[1],user);
-    if(method === 'GET' && !match[2]) return {post:parent,replies:db.prepare(`SELECT r.*,u.name author FROM replies r JOIN users u ON u.id=r.authorId WHERE r.postId=? AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=r.authorId) ORDER BY r.createdAt,r.id LIMIT 1000`).all(parent.id,user?.id || '')};
+    if(method === 'GET' && !match[2]) return {post:parent,replies:db.prepare(`SELECT r.*,u.name author FROM replies r JOIN users u ON u.id=r.authorId WHERE r.postId=? AND NOT EXISTS(SELECT 1 FROM content_moderation m WHERE m.targetType='reply' AND m.targetId=r.id AND m.hidden=1) AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=r.authorId) ORDER BY r.createdAt,r.id LIMIT 1000`).all(parent.id,user?.id || '')};
     if(method === 'DELETE' && !match[2]) {
       if(parent.authorId !== user.id) fail(403,'只能删除自己的帖子');
       db.prepare('DELETE FROM posts WHERE id=?').run(parent.id); return {ok:true};
@@ -35,7 +35,7 @@ export async function route(req,url) {
       const existing=db.prepare('SELECT * FROM replies WHERE id=?').get(id);
       if(existing) {if(existing.authorId !== user.id || existing.postId !== parent.id) fail(409,'操作标识冲突'); return {ok:true};}
       const target=d.parentId ? db.prepare('SELECT * FROM replies WHERE id=? AND postId=?').get(d.parentId,parent.id) : null;
-      if(d.parentId && (!target || !visible(user,target.authorId))) fail(422,'被回复内容不存在');
+      if(d.parentId && (!target || !visible(user,target.authorId) || db.prepare("SELECT 1 FROM content_moderation WHERE targetType='reply' AND targetId=? AND hidden=1").get(target.id))) fail(422,'被回复内容不存在');
       transaction(()=>{
         db.prepare('INSERT INTO replies VALUES(?,?,?,?,?,?)').run(id,parent.id,d.parentId || null,user.id,content,now());
         for(const recipient of new Set([parent.authorId,target?.authorId].filter(Boolean))) {

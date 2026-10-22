@@ -49,10 +49,11 @@ async function download(url,signal) {
  const chunks=[];let count=0;for await(const chunk of response.body){count+=chunk.length;if(count>4_000_000){await response.body.cancel().catch(()=>{});throw new Error('arXiv response too large');}chunks.push(chunk);}
  return Buffer.concat(chunks).toString('utf8');
 }
-export async function collect(runId,{maxPages=2,signal,fetchPage=download,onProgress=()=>{}}={}) {
+export async function collect(runId,{maxPages=2,signal,fetchPage=download,onProgress=()=>{},assertActive=()=>{}}={}) {
  let run=db.prepare('SELECT * FROM collection_runs WHERE id=?').get(runId);if(!run)throw new Error('Collection run not found');
  if(run.status==='succeeded')return run;
  const query=JSON.parse(run.query);
+ assertActive();
  db.prepare("UPDATE collection_runs SET status='processing',error=NULL,updatedAt=? WHERE id=?").run(stamp(),runId);
  try {
   for(let page=0;page<maxPages;page++) {
@@ -71,12 +72,14 @@ export async function collect(runId,{maxPages=2,signal,fetchPage=download,onProg
     const match=entry.idURL.match(/^https?:\/\/arxiv\.org\/abs\/((?:[a-z-]+(?:\.[A-Z]{2})?\/\d{7})|(?:\d{4}\.\d{4,5}))(?:v(\d+))?$/);
     if(!match)throw new Error('Invalid arXiv paper identifier');
     const id=match[1],version=Number(match[2]||1);
+    assertActive();
     const result=upsertPaper({...entry,id,name:entry.title,topic:run.topic,tags:entry.categories,date:entry.publishedAt.slice(0,10),sourceUrl:`https://arxiv.org/abs/${id}`,sourceVersionURL:entry.idURL},{source:'arxiv',sourceId:id,version});
     if(result.changed)changed++;
    }
    const next=run.nextStart+feed.entries.length;
    const done=next>=feed.total||feed.entries.length<run.pageSize;
    if(feed.entries.length===0&&next<feed.total)throw new Error('Unexpected empty arXiv page; cursor preserved');
+   assertActive();
    transaction(()=>{
     db.prepare('UPDATE collection_runs SET nextStart=?,total=?,processed=processed+?,changed=changed+?,status=?,updatedAt=? WHERE id=?').run(next,feed.total,feed.entries.length,changed,done?'succeeded':'pending',stamp(),runId);
     if(done&&!query.idList&&!query.backfill)db.prepare('INSERT INTO collection_watermarks VALUES(?,?) ON CONFLICT(sourceKey) DO UPDATE SET updatedThrough=MAX(updatedThrough,excluded.updatedThrough)').run(run.sourceKey,query.until);
@@ -85,5 +88,5 @@ export async function collect(runId,{maxPages=2,signal,fetchPage=download,onProg
    if(done)break;
   }
   return run;
- }catch(e){db.prepare("UPDATE collection_runs SET status='failed',error=?,updatedAt=? WHERE id=?").run(String(e.message).slice(0,2000),stamp(),runId);throw e;}
+ }catch(e){assertActive();db.prepare("UPDATE collection_runs SET status='failed',error=?,updatedAt=? WHERE id=?").run(String(e.message).slice(0,2000),stamp(),runId);throw e;}
 }

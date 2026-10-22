@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { readFileSync } from 'node:fs';
 import { db } from './database.mjs';
 import { config } from './config.mjs';
 import { fail, limit } from './modules/shared.mjs';
@@ -17,9 +18,23 @@ const server=http.createServer(async(req,res)=>{
   try {
     limit(req,'all',300);
     const url=new URL(req.url,'http://localhost');
+    if(url.pathname==='/admin'||url.pathname.startsWith('/admin/')) {
+      const hostname=req.headers.host||'';
+      const allowed=['localhost','127.0.0.1','[::1]',req.socket.localAddress,config.host].filter(h=>h!=='0.0.0.0'&&h!=='::').map(h=>`${h}:${req.socket.localPort}`);
+      if(!allowed.includes(hostname))fail(403,'管理后台仅接受本机或配置的服务地址');
+      if(req.headers.origin&&req.headers.origin!==`http://${hostname}`)fail(403,'管理后台拒绝跨站请求');
+      const assets={'/admin':'index.html','/admin/':'index.html','/admin/app.js':'app.js','/admin/style.css':'style.css'};
+      if(req.method==='GET'&&assets[url.pathname]) {
+        const file=assets[url.pathname];
+        res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript; charset=utf-8':file.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8');
+        res.setHeader('Content-Security-Policy',"default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+        res.setHeader('Referrer-Policy','no-referrer');
+        res.end(readFileSync(new URL('./admin/'+file,import.meta.url)));return;
+      }
+    }
     let result;
     if(req.method==='GET' && url.pathname==='/health')result={ok:true,service:'paperpop',version:'0.2.0'};
-    else for(const route of routes) { result=await route(req,url); if(result!==undefined)break; }
+    else for(const route of routes) { result=await route(req,url,res); if(result!==undefined)break; }
     if(result===undefined)fail(404,'接口不存在');
     res.writeHead(200); res.end(JSON.stringify(result));
   } catch(e) {

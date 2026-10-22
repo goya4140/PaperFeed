@@ -53,8 +53,8 @@ export function retryTask(id) {
  });
 }
 export const handlers={
- async collect(task,{signal,progress}) {
-  const result=await collect(task.payload.runId,{signal,maxPages:1,onProgress:r=>progress({runId:r.id,nextStart:r.nextStart,total:r.total,changed:r.changed})});
+ async collect(task,{signal,progress,assertActive}) {
+  const result=await collect(task.payload.runId,{signal,assertActive,maxPages:1,onProgress:r=>progress({runId:r.id,nextStart:r.nextStart,total:r.total,changed:r.changed})});
   return {continue:result.status!=='succeeded',runId:result.id,processed:result.processed,changed:result.changed};
  }
 };
@@ -67,10 +67,11 @@ export async function runOne({owner=randomUUID(),signal,registry=handlers}={}) {
   const result=db.prepare("UPDATE tasks SET leaseUntil=? WHERE id=? AND owner=? AND status='processing'").run(Date.now()+config.taskLeaseMs,task.id,owner);
   if(!result.changes)controller.abort(new Error('Task lease lost'));
  },Math.max(200,Math.floor(config.taskLeaseMs/3)));
- const progress=data=>{controller.signal.throwIfAborted();const r=db.prepare("UPDATE tasks SET progress=?,updatedAt=? WHERE id=? AND owner=? AND status='processing'").run(JSON.stringify(data),stamp(),task.id,owner);if(!r.changes)throw new Error('Task lease lost');};
+ const assertActive=()=>{controller.signal.throwIfAborted();if(!db.prepare("SELECT 1 FROM tasks WHERE id=? AND owner=? AND status='processing' AND leaseUntil>?").get(task.id,owner,Date.now()))throw new Error("Task lease lost");};
+ const progress=data=>{assertActive();const r=db.prepare("UPDATE tasks SET progress=?,updatedAt=? WHERE id=? AND owner=? AND status='processing'").run(JSON.stringify(data),stamp(),task.id,owner);if(!r.changes)throw new Error('Task lease lost');};
  try{
   if(!registry[task.kind])throw new Error('Unsupported task kind: '+task.kind);
-  const result=await registry[task.kind](task,{signal:controller.signal,progress});controller.signal.throwIfAborted();
+  const result=await registry[task.kind](task,{signal:controller.signal,progress,assertActive});controller.signal.throwIfAborted();
   transaction(()=>{
    const r=db.prepare("UPDATE tasks SET status=?,result=?,attempts=attempts-?,availableAt=?,error=NULL,owner=NULL,leaseUntil=NULL,updatedAt=? WHERE id=? AND owner=? AND status='processing'").run(result?.continue?'pending':'succeeded',JSON.stringify(result??{}),result?.continue?1:0,Date.now(),stamp(),task.id,owner);
    if(r.changes)event(task,result?.continue?'continued':'succeeded');

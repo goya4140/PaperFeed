@@ -162,7 +162,7 @@ struct PaperCard: View {
                 Text(paper.name).font(.system(size: 20, weight: .bold, design: .serif)).foregroundStyle(.primary).lineLimit(2)
                 Text(paper.summary).font(.system(size: 12)).foregroundStyle(.secondary).lineSpacing(3).lineLimit(2)
                 HStack(spacing: 5) {
-                    Text(paper.poster == nil ? "速读" : "Poster").foregroundStyle(PopTheme.accent)
+                    Text(paper.isAbstractOnly ? "摘要" : paper.poster == nil ? "速读" : "Poster").foregroundStyle(PopTheme.accent)
                     Text("·")
                     Text(paper.date)
                     Spacer(minLength: 0)

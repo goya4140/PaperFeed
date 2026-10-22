@@ -1,7 +1,6 @@
 import { db } from '../database.mjs';
-import { topics, papers } from './papers.mjs';
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { hash, now, fail, text, identifier, authenticate, session, transaction, visible, post, library, body, limit } from './shared.mjs';
+import { hash, now, fail, text, authenticate, session, body, limit } from './shared.mjs';
 
 export async function route(req,url) {
   const p=url.pathname, method=req.method;
@@ -22,6 +21,7 @@ export async function route(req,url) {
     const user = db.prepare('SELECT * FROM users WHERE name=? COLLATE NOCASE').get(name);
     const candidate = scryptSync(data.password,user?.salt || 'unregistered',64);
     if (!user || !timingSafeEqual(candidate, Buffer.from(user.password,'hex'))) fail(401,'用户名或密码不正确');
+    if(db.prepare('SELECT 1 FROM user_restrictions WHERE userId=? AND restricted=1').get(user.id))fail(403,'账号已被限制，请联系管理员');
     return session(user);
   }
   if (method === 'GET' && p === '/v1/me') return authenticate(req);

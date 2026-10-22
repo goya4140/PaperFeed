@@ -46,3 +46,8 @@ next-env.d.ts
 /server/.data/
 *.xcuserstate
 xcuserdata/
+# private local databases / bootstrap credentials (including custom data folders)
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+admin-login.json

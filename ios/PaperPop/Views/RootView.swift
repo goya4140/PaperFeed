@@ -79,6 +79,10 @@ struct DiscoverView: View {
                         .frame(width: 32, height: 32).background(PopTheme.accent, in: RoundedRectangle(cornerRadius: 11))
                     Text("PaperPop").font(.system(size: 23, weight: .bold, design: .rounded)).tracking(-0.8)
                     Spacer()
+                    Button { Task { await store.refresh() } } label: {
+                        Image(systemName: "arrow.clockwise").font(.system(size: 15)).foregroundStyle(.secondary)
+                            .frame(width: 32, height: 36)
+                    }.buttonStyle(.plain).accessibilityLabel("刷新论文")
                     NavigationLink { NotificationsView() } label: {
                         Image(systemName: store.unread > 0 ? "bell.badge" : "bell").font(.system(size: 16)).foregroundStyle(.primary)
                             .frame(width: 36, height: 36).background(PopTheme.card, in: Circle())
@@ -110,7 +114,7 @@ struct DiscoverView: View {
                 if let featured {
                     NavigationLink { PaperView(paper: featured) } label: { FeaturedPaperCard(paper: featured) }.buttonStyle(.plain)
                 }
-                PopSectionHeading(title: "值得一读", detail: "\(filtered.count) 条精选研究")
+                PopSectionHeading(title: "值得一读", detail: "\(filtered.count) 条研究内容")
                 VStack(spacing: 11) {
                     ForEach(filtered.filter { $0.id != featured?.id }) { paper in
                         NavigationLink { PaperView(paper: paper) } label: { PaperCard(paper: paper) }.buttonStyle(.plain)
@@ -123,7 +127,7 @@ struct DiscoverView: View {
                     }
                 }
                 if filtered.isEmpty { EmptyState(icon: "magnifyingglass", title: "换个方向，继续发现", message: "试试其他标题、作者或方向；已隐藏内容可在“我的”中恢复。") }
-                HStack(spacing: 6) { Circle().fill(PopTheme.accent.opacity(0.5)).frame(width: 4, height: 4); Text("精选历史内容集 · 非实时资讯") }
+                HStack(spacing: 6) { Circle().fill(PopTheme.accent.opacity(0.5)).frame(width: 4, height: 4); Text("已收录论文 · 刷新获取后台内容") }
                     .font(.system(size: 9)).foregroundStyle(.secondary).frame(maxWidth: .infinity).padding(.vertical, 7)
             }.padding(.horizontal, 22).padding(.top, 18).padding(.bottom, 18)
                 .frame(maxWidth: 620).frame(maxWidth: .infinity)

@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct PaperView: View {
-    let paper: Paper
+    private let initialPaper: Paper
+    init(paper: Paper) { self.initialPaper = paper }
     @EnvironmentObject private var store: AppStore
+    private var paper: Paper { store.catalog.papers.first { $0.id == initialPaper.id } ?? initialPaper }
     @State private var note = false
     @State private var diagram = false
     @State private var report = false
@@ -32,12 +34,12 @@ struct PaperView: View {
                                 Label(paper.isAbstractOnly ? "论文摘要 · 详细解读待发布" : paper.poster == nil ? "基础速读 · 完整 Poster 待制作" : "精选图解 · 编辑整理", systemImage: "checkmark.seal")
                                     .font(.system(size: 10)).foregroundStyle(.secondary)
                             }
-                            if let hook = paper.poster?.hook {
+                            if let hook = paper.poster?.hook, !hook.isEmpty {
                                 DisclosureGroup { Text(hook).font(.system(size: 13)).foregroundStyle(.secondary).lineSpacing(5).padding(.top, 12) }
                                     label: { Label("从一个例子开始", systemImage: "lightbulb").font(.system(size: 12, weight: .medium)) }.popCard()
                             }
                             if !(paper.poster?.flow ?? paper.steps).isEmpty { Button { diagram = true } label: { flowCard }.buttonStyle(.plain) }
-                            if let evidence = paper.poster?.evidence {
+                            if let evidence = paper.poster?.evidence, !evidence.isEmpty {
                                 VStack(alignment: .leading, spacing: 15) {
                                     PopSectionHeading(title: "关键证据", detail: "原文实验 · 请结合条件")
                                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], alignment: .leading, spacing: 12) {
@@ -69,7 +71,7 @@ struct PaperView: View {
                                     }.font(.caption.weight(.semibold))
                                 }.popCard().id(index)
                             }
-                            if let example = paper.poster?.example {
+                            if let example = paper.poster?.example, !example.title.isEmpty {
                                 VStack(alignment: .leading, spacing: 14) {
                                     Text(example.title).font(.system(size: 17, weight: .semibold))
                                     Text("编辑例子 · 非原文实验").font(.caption).foregroundStyle(.secondary)
@@ -84,7 +86,7 @@ struct PaperView: View {
                             if let topic = store.catalog.topics.first(where: { $0.id == paper.topic }) {
                                 NavigationLink { TopicView(topic: topic) } label: { Label("进入 \(topic.name) 社区", systemImage: "person.3") }.padding(.vertical, 8)
                             }
-                            if let related = paper.poster?.related {
+                            if let related = paper.poster?.related, !related.isEmpty {
                                 Text("接着读").font(.headline)
                                 ForEach(store.catalog.papers.filter { related.contains($0.id) }) { other in
                                     NavigationLink { PaperView(paper: other) } label: { PaperCard(paper: other) }.buttonStyle(.plain)
@@ -92,6 +94,7 @@ struct PaperView: View {
                             }
                         }.padding(22).frame(maxWidth: 620).frame(maxWidth: .infinity)
                     }
+                    .refreshable { await store.refresh() }
                     .onAppear {
                         if let position = store.library.positions[paper.id], let index = Int(position) { proxy.scrollTo(index, anchor: .top) }
                     }
@@ -106,6 +109,7 @@ struct PaperView: View {
                     Label(store.library.saved.contains(paper.id) ? "取消收藏" : "收藏", systemImage: store.library.saved.contains(paper.id) ? "bookmark.fill" : "bookmark")
                 }
                 Menu {
+                    Button("刷新论文") { Task { await store.refresh() } }
                     Button(store.library.read.contains(paper.id) ? "标记未读" : "标记已读") { store.toggle("read", key: paper.id, contains: store.library.read.contains(paper.id)) }
                     Button(store.library.hidden.contains(paper.id) ? "恢复推荐" : "不感兴趣") { store.toggle("hidden", key: paper.id, contains: store.library.hidden.contains(paper.id)) }
                     Button("内容纠错") { report = true }

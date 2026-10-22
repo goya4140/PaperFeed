@@ -9,7 +9,7 @@ export function seedContent(db,transaction) {
       const {poster,...metadata}=p;
       db.prepare('INSERT OR IGNORE INTO papers VALUES(?,?,?,?,?,?,?,?,?,?,?)').run(p.id,p.topic,'seed',p.id,1,p.date,p.date,now,'public',poster?1:0,JSON.stringify(metadata));
       db.prepare('INSERT OR IGNORE INTO paper_versions VALUES(?,?,?,?,?)').run(p.id,1,p.date,now,JSON.stringify(metadata));
-      if(poster)db.prepare('INSERT OR IGNORE INTO interpretations VALUES(?,?,?,?,?,?,?,?,?)').run('seed-'+p.id,p.id,1,'published',JSON.stringify(poster),JSON.stringify({source:'curated seed',sourceUrl:p.sourceUrl}),now,now,now);
+      if(poster)db.prepare('INSERT OR IGNORE INTO interpretations(id,paperId,paperVersion,status,data,provenance,createdAt,updatedAt,publishedAt) VALUES(?,?,?,?,?,?,?,?,?)').run('seed-'+p.id,p.id,1,'published',JSON.stringify(poster),JSON.stringify({source:'curated seed',sourceUrl:p.sourceUrl}),now,now,now);
     }
     db.prepare("INSERT INTO content_meta VALUES('seed-v1',?)").run(now);
   });

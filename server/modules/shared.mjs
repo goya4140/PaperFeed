@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 import { db } from '../database.mjs';
 export const rate = new Map();
 export const hash = value => createHash('sha256').update(value).digest('hex');
@@ -15,6 +15,7 @@ export function identifier(value) {
 export function authenticate(req, required = true) {
   const token = req.headers.authorization?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
   const user = token && db.prepare('SELECT u.id,u.name FROM users u JOIN sessions s ON u.id=s.userId WHERE s.hash=? AND s.expires>?').get(hash(token), Date.now());
+  if(user&&required&&db.prepare('SELECT 1 FROM user_restrictions WHERE userId=? AND restricted=1').get(user.id))fail(403,'账号已被限制，请联系管理员');
   if (!user && required) fail(401, '请登录后操作');
   return user || null;
 }
@@ -30,7 +31,7 @@ export function transaction(fn) {
 }
 export function visible(user, authorId) { return !user || !db.prepare('SELECT 1 FROM blocks WHERE userId=? AND targetId=?').get(user.id, authorId); }
 export function post(id, user) {
-  const row = db.prepare(`SELECT p.*,u.name author,(SELECT COUNT(*) FROM replies r WHERE r.postId=p.id AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=r.authorId)) replies FROM posts p JOIN users u ON u.id=p.authorId WHERE p.id=?`).get(user?.id || '', id);
+  const row = db.prepare(`SELECT p.*,u.name author,(SELECT COUNT(*) FROM replies r WHERE r.postId=p.id AND NOT EXISTS(SELECT 1 FROM content_moderation m WHERE m.targetType='reply' AND m.targetId=r.id AND m.hidden=1) AND NOT EXISTS(SELECT 1 FROM blocks b WHERE b.userId=? AND b.targetId=r.authorId)) replies FROM posts p JOIN users u ON u.id=p.authorId WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM content_moderation m WHERE m.targetType='post' AND m.targetId=p.id AND m.hidden=1)`).get(user?.id || '', id);
   if (!row || !visible(user, row.authorId)) fail(404, '讨论不存在或已被屏蔽');
   return row;
 }

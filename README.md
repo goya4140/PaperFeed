@@ -1,5 +1,11 @@
 # PaperFeed · Research, made easier
 
+## 本地业务开发 · 2026-10-22
+
+已完成本地业务阶段 1–6：数据库论文与版本、arXiv 采集、独立可靠 worker、本地管理后台、人工解读草稿/发布、举报与账号限制。沿用已有 SwiftUI 页面和 Node API，原 ID、收藏笔记、讨论与同步保持兼容。模型生成及其后的服务端推荐、客户端分页、账号恢复和真机全流程验收尚待后续阶段。
+
+运行与配置见 [本地业务运行说明](docs/local-business/README.md)，逐阶段验证见 [开发记录](docs/local-business/progress.md)。管理后台默认 http://127.0.0.1:8787/admin/ 。
+
 ## PaperPop 原生 App · 2026-10-20
 
 新增 SwiftUI iOS 工程与独立的 Node.js/SQLite 讨论服务，入口见 [iOS 运行说明](ios/README.md)。支持论文发现、结构化 Poster、账号、共享论文讨论、研究方向社区、站内通知、收藏和私人笔记同步。此原生后台与现有 Sites Demo 的身份及数据库独立，尚未迁移 Web 数据。

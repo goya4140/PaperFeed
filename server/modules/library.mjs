@@ -1,7 +1,6 @@
 import { db } from '../database.mjs';
 import { topics, papers } from './papers.mjs';
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { hash, now, fail, text, identifier, authenticate, session, transaction, visible, post, library, body, limit } from './shared.mjs';
+import { now, fail, text, identifier, authenticate, transaction, library, body, limit } from './shared.mjs';
 
 export async function route(req,url) {
   const p=url.pathname, method=req.method;
