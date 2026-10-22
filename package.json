@@ -23,7 +23,9 @@
     "local:init": "node server/init.mjs",
     "local:test": "node --test server/tests/*.test.mjs",
     "local:collect": "node server/collect.mjs",
-    "local:scheduler": "node server/scheduler.mjs"
+    "local:scheduler": "node server/scheduler.mjs",
+    "local:worker": "node server/worker.mjs",
+    "local:jobs": "node server/jobs.mjs"
   },
   "dependencies": {
     "react": "19.2.6",

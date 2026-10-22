@@ -17,6 +17,7 @@ export const config=Object.freeze({
   modelName:process.env.PAPERPOP_MODEL_NAME||'',modelKey:process.env.PAPERPOP_MODEL_KEY||process.env.OPENAI_API_KEY||'',
   arxivURL:'https://export.arxiv.org/api/query',
   arxivIntervalMs:integer('PAPERPOP_ARXIV_INTERVAL_MS',3100,3000,3600000),
+  taskLeaseMs:integer('PAPERPOP_TASK_LEASE_MS',15000,600,120000),
   taskTimeoutMs:integer('PAPERPOP_TASK_TIMEOUT_MS',120000,1000,3600000),
   workerPollMs:integer('PAPERPOP_WORKER_POLL_MS',1000,100,60000)
 });
