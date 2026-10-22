@@ -23,6 +23,11 @@ enum StoreVerification {
         precondition(post.id == id)
         let found = try await store.posts(paperId: "2303.11366")
         precondition(found.contains { $0.id == id })
+        let replyID = UUID().uuidString
+        try await store.reply(id: replyID, postId: id, parentId: nil, body: "原生客户端回复验证")
+        try await store.reply(id: replyID, postId: id, parentId: nil, body: "原生客户端回复验证")
+        let thread = try await store.detail(id)
+        precondition(thread.replies.filter { $0.id == replyID }.count == 1)
         await store.logout()
         precondition(store.library.notes["2303.11366"] == nil, "Imported guest data must not be re-imported on every login")
         try await store.authenticate(name: name + "_b", password: "synthetic-password-456", register: true, importGuest: false)
