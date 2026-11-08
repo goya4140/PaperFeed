@@ -1,0 +1,10 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/main" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+ <LinearLayout android:layout_width="match_parent" android:layout_height="68dp" android:paddingHorizontal="22dp" android:gravity="center_vertical">
+  <ImageView android:layout_width="34dp" android:layout_height="34dp" android:src="@drawable/ic_logo" android:importantForAccessibility="no"/>
+  <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:text="@string/app_name" android:textSize="23sp" android:fontFamily="sans-serif-medium" android:textColor="@color/ink"/>
+  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/ui_activity_main_1" android:textSize="11sp" android:textColor="@color/forest" android:padding="8dp" android:background="@drawable/bg_badge"/>
+ </LinearLayout>
+ <FrameLayout android:id="@+id/page_container" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+ <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/line"/>
+ <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottom_nav" android:layout_width="match_parent" android:layout_height="76dp" android:background="@color/paper" app:menu="@menu/bottom_nav" app:labelVisibilityMode="labeled" app:itemIconTint="@color/nav_item" app:itemTextColor="@color/nav_item" android:elevation="0dp"/>
+</LinearLayout>
