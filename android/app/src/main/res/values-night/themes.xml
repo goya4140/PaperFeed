@@ -1,0 +1,19 @@
+<resources>
+    <style name="Base.Theme.PaperFeed" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/forest</item><item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/forest</item><item name="colorSurface">@color/paper</item>
+        <item name="colorOnSurface">@color/ink</item><item name="colorSurfaceContainer">@color/mint</item>
+        <item name="colorPrimaryContainer">@color/mint</item><item name="colorOnPrimaryContainer">@color/forest</item>
+        <item name="colorSecondaryContainer">@color/lime</item><item name="colorOnSecondaryContainer">@color/forest</item>
+        <item name="colorSurfaceContainerHigh">@color/paper</item><item name="colorSurfaceContainerHighest">@color/mint</item>
+        <item name="colorOutline">#ADBCAF</item><item name="colorOutlineVariant">@color/line</item>
+        <item name="android:windowBackground">@color/paper</item>
+        <item name="android:fontFamily">sans-serif</item><item name="android:colorAccent">@color/forest</item>
+        <item name="android:windowLightStatusBar">true</item>
+        
+        <item name="android:statusBarColor">@color/paper</item>
+        <item name="android:navigationBarColor">@color/paper</item>
+        
+    </style>
+    <style name="Theme.PaperFeed" parent="Base.Theme.PaperFeed"/>
+</resources>

@@ -1,0 +1,15 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="13dp" android:orientation="vertical" android:background="@drawable/bg_card" android:padding="18dp" android:descendantFocusability="afterDescendants">
+ <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+  <TextView android:id="@+id/card_topic" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingHorizontal="8dp" android:paddingVertical="5dp" android:background="@drawable/bg_badge" android:textSize="11sp" android:textColor="@color/forest"/>
+  <TextView android:id="@+id/card_meta" style="@style/PF.Caption" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:paddingStart="10dp"/>
+  <ImageButton android:id="@+id/card_save" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginTop="-9dp" android:layout_marginBottom="-9dp" android:layout_marginEnd="-12dp" android:padding="12dp" android:src="@drawable/ic_bookmark" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/ui_item_paper_1"/>
+ </LinearLayout>
+ <TextView android:id="@+id/card_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:textSize="23sp" android:textColor="@color/ink" android:fontFamily="sans-serif-medium"/>
+ <TextView android:id="@+id/card_summary" style="@style/PF.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:maxLines="3" android:ellipsize="end"/>
+ <TextView android:id="@+id/card_note" style="@style/PF.Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:maxLines="2" android:ellipsize="end" android:visibility="gone"/>
+ <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="16dp" android:background="@color/line"/>
+ <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="13dp" android:gravity="center_vertical">
+  <TextView android:id="@+id/card_reason" style="@style/PF.Caption" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/ui_item_paper_2" android:textSize="12sp" android:textColor="@color/forest"/>
+ </LinearLayout>
+</LinearLayout>

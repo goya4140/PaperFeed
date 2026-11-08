@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">PaperFeed</string>
+    <string name="discover">发现</string><string name="explore">方向</string>
+    <string name="library">知识库</string><string name="profile">我的</string>
+
+    <string name="ui_activity_detail_1" translatable="false">返回</string>
+    <string name="ui_activity_detail_2" translatable="false">PAPERFEED / READING ROOM</string>
+    <string name="ui_activity_detail_3" translatable="false">更多操作</string>
+    <string name="ui_activity_detail_4" translatable="false">ONE IDEA TO TAKE AWAY</string>
+    <string name="ui_activity_detail_5" translatable="false">朗读解读</string>
+    <string name="ui_activity_detail_6" translatable="false">01 / 研究在解决什么问题？</string>
+    <string name="ui_activity_detail_7" translatable="false">02 / 核心方法</string>
+    <string name="ui_activity_detail_8" translatable="false">03 / 可以带走的启发</string>
+    <string name="ui_activity_detail_9" translatable="false">阅读边界</string>
+    <string name="ui_activity_detail_10" translatable="false">留下你的想法</string>
+    <string name="ui_activity_detail_11" translatable="false">笔记仅保存在本机，输入后自动保存。</string>
+    <string name="ui_activity_detail_12" translatable="false">这篇研究给了你什么启发？</string>
+    <string name="ui_activity_detail_13" translatable="false">保存笔记</string>
+    <string name="ui_activity_detail_14" translatable="false">收藏分组：未分组</string>
+    <string name="ui_activity_detail_15" translatable="false">这类内容适合你吗？</string>
+    <string name="ui_activity_detail_16" translatable="false">想多看</string>
+    <string name="ui_activity_detail_17" translatable="false">少推荐</string>
+    <string name="ui_activity_detail_18" translatable="false">解读为基于原始来源编写的学习摘要，流程为编辑示意。原文需在外部浏览器中联网查看。</string>
+    <string name="ui_activity_detail_19" translatable="false">标记已读</string>
+    <string name="ui_activity_detail_20" translatable="false">加入收藏</string>
+    <string name="ui_activity_main_1" translatable="false">● 离线课程版</string>
+    <string name="ui_item_paper_1" translatable="false">收藏</string>
+    <string name="ui_item_paper_2" translatable="false">开始阅读  ↗</string>
+    <string name="ui_page_discover_1" translatable="false">RESEARCH, MADE EASIER</string>
+    <string name="ui_page_discover_2" translatable="false">把好奇心，\n变成下一次发现。</string>
+    <string name="ui_page_discover_3" translatable="false">12 条精选内容 · 随时离线阅读</string>
+    <string name="ui_page_discover_4" translatable="false">搜索论文、作者或关键词</string>
+    <string name="ui_page_discover_5" translatable="false">为你发现</string>
+    <string name="ui_page_discover_6" translatable="false">兴趣优先 ↓</string>
+    <string name="ui_page_explore_1" translatable="false">FOLLOW YOUR CURIOSITY</string>
+    <string name="ui_page_explore_2" translatable="false">每一种好奇，\n都有值得探索的方向。</string>
+    <string name="ui_page_explore_3" translatable="false">从 5 个研究方向出发，找到下一篇想读的内容。</string>
+    <string name="ui_page_explore_4" translatable="false">调整我的研究兴趣</string>
+    <string name="ui_page_library_1" translatable="false">YOUR KNOWLEDGE, COLLECTED</string>
+    <string name="ui_page_library_2" translatable="false">让读过的，\n真正留下来。</string>
+    <string name="ui_page_library_3" translatable="false">全部分组 ▾</string>
+    <string name="ui_page_profile_1" translatable="false">A SMALL SPACE FOR BIG IDEAS</string>
+    <string name="ui_page_profile_2" translatable="false">好奇心研究员</string>
+    <string name="ui_page_profile_3" translatable="false">每一次阅读，都有新的可能。</string>
+    <string name="ui_page_profile_4" translatable="false">我的研究兴趣</string>
+    <string name="ui_page_profile_5" translatable="false">调整兴趣</string>
+    <string name="ui_page_profile_6" translatable="false">把知识带走</string>
+    <string name="ui_page_profile_7" translatable="false">导出收藏、笔记和阅读记录，保存到你选择的位置。</string>
+    <string name="ui_page_profile_8" translatable="false">导出知识库 · Markdown</string>
+    <string name="ui_page_profile_9" translatable="false">导出引用 · BibTeX</string>
+    <string name="ui_page_profile_10" translatable="false">关于 PaperFeed  ↗</string>
+    <string name="ui_page_profile_11" translatable="false">LOCAL FIRST · JAVA / XML\n阅读数据保存在本机，无需注册。\n12 条内置内容为固定学习资料，并非实时资讯。</string>
+    <string name="discussion_title">论文讨论</string>
+    <string name="discussion_entry">论文讨论 · %1$d 条留言</string>
+    <string name="discussion_local">离线演示 · 留言仅保存在本机，不会发送给其他人</string>
+    <string name="discussion_empty">还没有留言，写下你的第一个问题或想法吧。</string>
+    <string name="discussion_name">昵称（选填，最多 20 字符）</string>
+    <string name="discussion_hint">针对这篇内容留言，最多 1000 字符</string>
+    <string name="discussion_send">发布留言</string>
+    <string name="discussion_count">%1$d 条留言 · 最新在前</string>
+    <string name="discussion_success">留言已保存在本机</string>
+    <string name="discussion_error">保存失败，输入内容已保留，请重试</string>
+    <string name="discussion_required">请先输入留言内容</string>
+</resources>

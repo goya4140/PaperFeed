@@ -1,0 +1,110 @@
+[
+  {
+    "id":"2303.11366","name":"Reflexion","title":"Reflexion: Language Agents with Verbal Reinforcement Learning","authors":"Noah Shinn and Federico Cassano and Edward Berman and Ashwin Gopinath and Karthik Narasimhan and Shunyu Yao","topic":"Agent 记忆","type":"论文","year":2023,"minutes":4,"url":"https://arxiv.org/abs/2303.11366",
+    "summary":"让智能体把失败写成经验，在下一次尝试中做出更好的决定。",
+    "question":"一次任务失败后，语言智能体怎样利用反馈，而不必重新训练模型？",
+    "method":"把任务结果转化为文字反思，写入情景记忆；再次执行时，模型同时参考任务和过去的经验。",
+    "takeaway":"学习不一定只发生在参数里。把行动结果整理成可检索的经验，也是改进智能体的一条路径。",
+    "caution":"反思可能归因错误；实验结果依赖任务、基础模型与反馈质量，不代表任何场景都会提升。",
+    "steps":"执行任务|接收反馈|文字反思|记忆再利用"
+  },
+  {
+    "id":"2310.08560","name":"MemGPT","title":"MemGPT: Towards LLMs as Operating Systems","authors":"Charles Packer and Sarah Wooders and Kevin Lin and Vivian Fang and Shishir G. Patil and Ion Stoica and Joseph E. Gonzalez","topic":"Agent 记忆","type":"论文","year":2023,"minutes":5,"url":"https://arxiv.org/abs/2310.08560",
+    "summary":"借鉴操作系统的分层存储，让有限的上下文容纳更长的交互历史。",
+    "question":"上下文窗口有限，长对话中的重要信息如何被保留并在需要时找回？",
+    "method":"区分工作上下文与外部记忆，通过显式的记忆管理和控制流程，在不同存储层之间移动信息。",
+    "takeaway":"不必把所有历史一次塞进提示词。先决定什么值得保留，再决定什么时候把它放回上下文。",
+    "caution":"这不意味着模型获得无限上下文。检索、摘要和记忆调度都有成本，也可能遗漏信息。",
+    "steps":"工作上下文|外部记忆|检索与调度|继续对话"
+  },
+  {
+    "id":"2210.03629","name":"ReAct","title":"ReAct: Synergizing Reasoning and Acting in Language Models","authors":"Shunyu Yao and Jeffrey Zhao and Dian Yu and Nan Du and Izhak Shafran and Karthik Narasimhan and Yuan Cao","topic":"推理与规划","type":"论文","year":2022,"minutes":4,"url":"https://arxiv.org/abs/2210.03629",
+    "summary":"把推理和行动交替起来，让模型根据真实观察不断调整计划。",
+    "question":"只在脑中推理可能偏离事实，只执行工具又缺少整体计划，如何结合两者？",
+    "method":"采用推理、行动、观察交替的轨迹。模型调用工具获取环境信息，再据此决定后续步骤。",
+    "takeaway":"工具返回的观察可以修正下一步决策。设计智能体时，应让信息获取与计划更新形成闭环。",
+    "caution":"工具错误和不可靠观察仍会传播；论文中的实验效果不能直接替代具体应用的验证。",
+    "steps":"理解目标|选择行动|观察结果|更新计划"
+  },
+  {
+    "id":"2305.16291","name":"Voyager","title":"Voyager: An Open-Ended Embodied Agent with Large Language Models","authors":"Guanzhi Wang and Yuqi Xie and Yunfan Jiang and Ajay Mandlekar and Chaowei Xiao and Yuke Zhu and Linxi Fan and Anima Anandkumar","topic":"编程智能体","type":"论文","year":2023,"minutes":5,"url":"https://arxiv.org/abs/2305.16291",
+    "summary":"在 Minecraft 中积累可执行技能，让探索经验变成可以复用的代码。",
+    "question":"开放世界没有固定任务清单，智能体如何持续探索，并复用已学会的能力？",
+    "method":"结合自动课程、可检索的技能代码库，以及利用环境反馈反复改进程序的机制。",
+    "takeaway":"记忆可以保存可执行的技能，而不只是文字描述。新任务可以组合已有技能来完成。",
+    "caution":"研究环境是 Minecraft，不能据此推断系统已经具备真实世界的通用自主能力。",
+    "steps":"生成目标|检索技能|执行与修正|积累新技能"
+  },
+  {
+    "id":"2407.04620","name":"TTT Layers","title":"Learning to (Learn at Test Time): RNNs with Expressive Hidden States","authors":"Yu Sun and Xinhao Li and Karan Dalal and Jiarui Xu and Arjun Vikram and Genghan Zhang and Yann Dubois and Xinlei Chen and Xiaolong Wang and Sanmi Koyejo and Tatsunori Hashimoto and Carlos Guestrin","topic":"高效模型","type":"论文","year":2024,"minutes":5,"url":"https://arxiv.org/abs/2407.04620",
+    "summary":"把循环模型的隐藏状态变成一个小模型，用学习过程来更新记忆。",
+    "question":"如何兼顾长序列处理效率，以及隐藏状态表达复杂信息的能力？",
+    "method":"用可学习模型表示隐藏状态，在处理输入序列时执行自监督更新，提出 TTT-Linear 和 TTT-MLP 等实例。",
+    "takeaway":"序列建模中的状态更新，可以被理解为一个小型学习过程，为设计高效架构提供新视角。",
+    "caution":"论文比较有特定模型规模和实验设置；内存读写等工程成本仍需考虑，并非任意场景都优于 Transformer。",
+    "steps":"接收序列|形成学习目标|更新隐藏模型|输出表示"
+  },
+  {
+    "id":"2310.06770","name":"SWE-bench","title":"SWE-bench: Can Language Models Resolve Real-World GitHub Issues?","authors":"Carlos E. Jimenez and John Yang and Alexander Wettig and Shunyu Yao and Kexin Pei and Ofir Press and Karthik Narasimhan","topic":"编程智能体","type":"论文","year":2023,"minutes":4,"url":"https://arxiv.org/abs/2310.06770",
+    "summary":"用真实仓库的 Issue 和测试，衡量模型能否完成实际的软件修复。",
+    "question":"写出一道编程题的答案，与在已有项目中定位并修复问题，究竟相差多远？",
+    "method":"收集真实 GitHub 问题及对应修复，要求系统理解仓库、生成修改，并通过相关测试。",
+    "takeaway":"评估编程智能体需要观察完整的工程任务，而不只看单段代码是否像正确答案。",
+    "caution":"不同数据子集、工具和测试条件会影响成绩。这里介绍原始研究，不提供当前排行榜。",
+    "steps":"读取 Issue|理解代码库|生成补丁|运行测试"
+  },
+  {
+    "id":"2405.04434","name":"DeepSeek-V2","title":"DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model","authors":"DeepSeek-AI","topic":"高效模型","type":"论文","year":2024,"minutes":5,"url":"https://arxiv.org/abs/2405.04434",
+    "summary":"从注意力和专家路由两端入手，探索能力与推理成本之间的平衡。",
+    "question":"大模型规模增加时，怎样控制计算和缓存成本？",
+    "method":"使用多头潜在注意力 MLA 压缩注意力缓存，并采用 DeepSeekMoE 架构组织专家计算。",
+    "takeaway":"模型总参数量并不等于每次推理实际使用的计算量。理解效率时，要同时看架构和运行条件。",
+    "caution":"这里介绍 2024 年的 V2 技术报告，不代表当前模型或价格；具体效率依赖硬件与部署实现。",
+    "steps":"输入表示|压缩注意力|专家路由|生成输出"
+  },
+  {
+    "id":"2301.04104","name":"DreamerV3","title":"Mastering Diverse Domains through World Models","authors":"Danijar Hafner and Jurgis Pasukonis and Jimmy Ba and Timothy Lillicrap","topic":"具身智能","type":"论文","year":2023,"minutes":5,"url":"https://arxiv.org/abs/2301.04104",
+    "summary":"先学习环境如何变化，再在想象的轨迹中改进自己的行动。",
+    "question":"强化学习算法能否减少针对不同任务反复调整配置的需要？",
+    "method":"学习世界模型，在模型生成的轨迹中训练行为策略，并通过归一化等设计改善跨任务训练稳定性。",
+    "takeaway":"世界模型把预测与决策连接起来，让智能体利用内部模拟来学习行为。",
+    "caution":"世界模型会有预测误差；模拟任务上的表现，不能直接当作现实机器人安全性或可靠性的证据。",
+    "steps":"观察环境|学习世界模型|想象未来|优化行为"
+  },
+  {
+    "id":"effective-agents","name":"Effective Agents","title":"Building effective agents","authors":"Anthropic","topic":"推理与规划","type":"官方文章","year":2024,"minutes":4,"url":"https://www.anthropic.com/research/building-effective-agents",
+    "summary":"从简单、可组合的工作流出发，为任务选择合适的自主程度。",
+    "question":"面对一个业务任务，什么时候用固定工作流，什么时候让模型自主决定步骤？",
+    "method":"区分预定义工作流与动态智能体，介绍链式处理、路由、并行、编排和评估优化等设计模式。",
+    "takeaway":"先用简单结构验证任务，再按效果增加复杂度。工具接口与可观察的执行过程同样重要。",
+    "caution":"这是 2024 年的工程经验文章，不是学术论文；工具生态已有变化，应结合原文时间理解。",
+    "steps":"定义任务|选择模式|组合工具|评估效果"
+  },
+  {
+    "id":"openai-o1","name":"OpenAI o1","title":"Learning to reason with LLMs","authors":"OpenAI","topic":"推理与规划","type":"官方文章","year":2024,"minutes":4,"url":"https://openai.com/index/learning-to-reason-with-llms/",
+    "summary":"把更多计算用于回答前的推理，探索复杂问题求解的新方向。",
+    "question":"除了增加预训练规模，模型能否通过训练推理过程和增加推理计算改善表现？",
+    "method":"原始发布介绍以强化学习训练复杂推理，并研究训练计算和回答时计算与任务表现的关系。",
+    "takeaway":"回答速度、计算成本与求解能力之间存在取舍，系统应根据任务选择合适策略。",
+    "caution":"这是 2024 年 o1 的历史发布介绍，不是当前产品推荐；厂商报告的评测不保证实际任务效果。",
+    "steps":"理解问题|展开推理|检查思路|形成回答"
+  },
+  {
+    "id":"deep-research","name":"Deep Research","title":"Introducing deep research","authors":"OpenAI","topic":"Agent 记忆","type":"官方文章","year":2025,"minutes":4,"url":"https://openai.com/index/introducing-deep-research/",
+    "summary":"让多轮检索、证据整理与报告写作连接成一个研究工作流。",
+    "question":"复杂研究问题往往需要多个来源，怎样在检索中不断调整方向并保留依据？",
+    "method":"原始发布描述一种多步骤研究能力，结合在线检索、材料分析和综合写作来形成带来源的报告。",
+    "takeaway":"研究流程需要管理证据与来源，而不只生成流畅文字；报告完成后仍应检查关键结论。",
+    "caution":"本条仅介绍原始产品思路。本 App 没有接入该服务，也不会自动检索或生成研究报告。",
+    "steps":"提出问题|迭代检索|整理证据|综合报告"
+  },
+  {
+    "id":"gemini-robotics","name":"Gemini Robotics","title":"Gemini Robotics brings AI into the physical world","authors":"Google DeepMind","topic":"具身智能","type":"官方文章","year":2025,"minutes":4,"url":"https://deepmind.google/blog/gemini-robotics-brings-ai-into-the-physical-world/",
+    "summary":"连接视觉、语言与动作，让机器人根据指令理解和操作物理环境。",
+    "question":"语言模型的语义理解，怎样与机器人的视觉感知和动作控制结合？",
+    "method":"原始发布介绍 Gemini Robotics 的视觉语言动作模型，以及面向空间理解的 Robotics-ER。",
+    "takeaway":"具身智能不仅要回答问题，还必须把语义指令转换为适合环境和机器人身体的行动。",
+    "caution":"这是 2025 年的项目发布介绍。演示不能代表任意环境下的稳定性，真实部署还需单独验证。",
+    "steps":"理解指令|感知场景|规划动作|执行与反馈"
+  }
+]
